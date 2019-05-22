@@ -91,6 +91,6 @@ fst_hudson_k_obj$fst
 fst_hudson_k_obj$fst_loci
 
 # estimated pairwise FST matrix using the "Hudson" formula
-fst_hudson_matrix <- fst_hudson_subpops(X, labs)
+fst_hudson_matrix <- fst_hudson_pairwise(X, labs)
 ```
 

@@ -40,18 +40,16 @@
 #' labs <- ceiling( (1 : n_ind) / k_subpops )
 #'
 #' # estimated pairwise FST matrix using the "Hudson" formula
-#' fst_hudson_matrix <- fst_hudson_subpops(X, labs)
+#' fst_hudson_matrix <- fst_hudson_pairwise(X, labs)
 #' 
 #' @seealso
 #' The popkin package.
 #'
 #' @export
-fst_hudson_subpops <- function(X, labs, pops = NULL) {
-    # compute population-level pairwise Fst's using Bhatia's estimator
-    # have to do separately for each pair of populations...
-    # note "labs" relate individuals to populations, while "pops" are not just the populations of interest but also the order of interest
+fst_hudson_pairwise <- function(X, labs, pops = NULL) {
+    # default is to place subpops alphabetically in matrix
     if (is.null(pops))
-        pops <- sort(unique(labs)) # default is to place subpops alphabetically in matrix
+        pops <- sort(unique(labs))
     
     n <- length(pops)
 

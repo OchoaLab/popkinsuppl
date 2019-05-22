@@ -103,9 +103,9 @@ test_that("fst_hudson_k works", {
     expect_equal( ncol(obj$data), 2 )
 })
 
-test_that("fst_hudson_subpops works", {
+test_that("fst_hudson_pairwise works", {
     # estimated pairwise FST matrix using the "Hudson" formula
-    fst_hudson_matrix <- fst_hudson_subpops(X, labs)
+    fst_hudson_matrix <- fst_hudson_pairwise(X, labs)
     
     expect_true( is.numeric(fst_hudson_matrix) )
 
