@@ -75,7 +75,7 @@ kinship_mor <- kinship_std(X, mean_of_ratios = TRUE)
 This package implements the Weir-Cockerham and Generalized "Hudson" FST estimators.
 It also provides a function to compute a matrix of pairwise Hudson FST estimates, where every entry compares a pair of subpopulations.
 
-```{R}
+```R
 # estimate FST using the Weir-Cockerham formula
 fst_wc_obj <- fst_wc(X, labs)
 # the genome-wide FST estimate
