@@ -4,14 +4,17 @@
 \alias{fst_wc}
 \title{The Weir-Cockerham FST estimator}
 \usage{
-fst_wc(X, labs, indexes_keep = NULL, loci_on_cols = FALSE)
+fst_wc(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE)
 }
 \arguments{
 \item{X}{The genotype matrix (BEDMatrix, regular R matrix, or function, same as \code{popkin}).}
 
 \item{labs}{A vector of subpopulation assignments for every individual.}
 
-\item{indexes_keep}{An optional vector of loci to keep (as booleans or indexes, used to subset an R matrix).}
+\item{m}{The number of loci, required if \code{X} is a function (ignored otherwise).
+In particular, \code{m} is obtained from \code{X} when it is a BEDMatrix or a regular R matrix.}
+
+\item{ind_keep}{An optional vector of individuals to keep (as booleans or indexes, used to subset an R matrix).}
 
 \item{loci_on_cols}{Determines the orientation of the genotype matrix (by default, \code{FALSE}, loci are along the rows).
 Set automatically to \code{TRUE} if \code{X} is a BEDMatrix object.}

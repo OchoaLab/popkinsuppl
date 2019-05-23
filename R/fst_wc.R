@@ -6,7 +6,9 @@
 #'
 #' @param X The genotype matrix (BEDMatrix, regular R matrix, or function, same as `popkin`).
 #' @param labs A vector of subpopulation assignments for every individual.
-#' @param indexes_keep An optional vector of loci to keep (as booleans or indexes, used to subset an R matrix).
+#' @param m The number of loci, required if `X` is a function (ignored otherwise).
+#' In particular, `m` is obtained from `X` when it is a BEDMatrix or a regular R matrix.
+#' @param ind_keep An optional vector of individuals to keep (as booleans or indexes, used to subset an R matrix).
 #' @param loci_on_cols Determines the orientation of the genotype matrix (by default, `FALSE`, loci are along the rows).
 #' Set automatically to `TRUE` if `X` is a BEDMatrix object.
 #'
@@ -60,16 +62,23 @@
 #' The popkin package.
 #'
 #' @export
-fst_wc <- function(X, labs, indexes_keep = NULL, loci_on_cols = FALSE) {
-    
+fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE) {
+    if (missing(X))
+        stop('Genotype matrix `X` is required!')
     if (missing(labs))
         stop('Subpopulation labels `labs` are required!')
-
+    
     # this is always given through labs
     n <- length(labs)
 
     # shared with Hudson estimator...
-    obj <- preprocess_genotype_obj(X, n, loci_on_cols, indexes_keep = indexes_keep)
+    obj <- preprocess_genotype_obj_fst(
+        X = X,
+        n = n,
+        m = m,
+        loci_on_cols = loci_on_cols,
+        ind_keep = ind_keep
+    )
     isFn <- obj$isFn
     m <- obj$m
     loci_on_cols <- obj$loci_on_cols
@@ -88,54 +97,52 @@ fst_wc <- function(X, labs, indexes_keep = NULL, loci_on_cols = FALSE) {
     # compute this C^2 coefficient of variation of sample sizes...
     c2 <- ( mean( k2n^2 ) / nbar^2 - 1) * r / ( r - 1 )
     
+    # initialize these vectors
+    # Do before get_mem_lim_m so free memory is accounted for properly
+    FstTs <- vector('numeric', m)
+    FstBs <- vector('numeric', m)
+    mafs <- vector('numeric', m)
+    
     # calculate chunk size given available memory
     mc <- get_mem_lim_m_WC(m, n, r)
-    
-    # initialize these things, unfortunately have to grow them for each chunk...
-    FstTs <- c()
-    FstBs <- c()
-    mafs <- c() # optional addendum to data
     
     # navigate chunks
     mci <- 1 # start of first chunk (needed for matrix inputs only; as opposed to function inputs)
     while(TRUE) { # start an infinite loop, break inside as needed
+        # indexes to extract loci, and also so save to FstTs and FstBs vectors
+        indexes_loci_chunk <- mci : min(mci + mc - 1, m)
+        
         if (isFn) {
             # get next "mc" SNPs
-            Xi <- X( mc, indexes_keep )
+            Xi <- X( mc, ind_keep )
 
             # stop when SNPs run out (only happens for functions X, not matrices)
             if (is.null(Xi))
                 break
             
         } else {
-            # here m is known...
-
             # this means all SNPs have been covered!
             if (mci > m)
                 break
-
-            # range of SNPs to extract in this chunk
-            is <- mci : min(mci + mc - 1, m)
             
-            # is this more efficient than setting indexes_keep<-1:n and subsetting?
-            if ( is.null( indexes_keep ) ) {
+            # is this more efficient than setting ind_keep<-1:n and subsetting?
+            if (is.null(ind_keep)) {
                 if (loci_on_cols) {
-                    Xi <- t(X[, is, drop = FALSE]) # transpose for our usual setup
+                    Xi <- t(X[, indexes_loci_chunk, drop = FALSE]) # transpose for our usual setup
                 } else {
-                    Xi <- X[is, , drop = FALSE]
+                    Xi <- X[indexes_loci_chunk, , drop = FALSE]
                 }
             } else {
                 if (loci_on_cols) {
-                    Xi <- t(X[indexes_keep, is, drop = FALSE]) # transpose for our usual setup
-                } else {
-                    Xi <- X[is, indexes_keep, drop = FALSE]
+                    Xi <- t(X[ind_keep, indexes_loci_chunk, drop = FALSE]) # transpose for our usual setup
+                } else  {
+                    Xi <- X[indexes_loci_chunk, ind_keep, drop = FALSE]
                 }
             }
-            mci <- mci+mc # update starting point for next chunk! (overshoots at the end, that's ok)
         }
         
         # estimate ancestral allele frequencies across the matrix
-        p_anc_hat <- rowMeans(Xi, na.rm = TRUE)/2
+        p_anc_hat <- rowMeans(Xi, na.rm = TRUE) / 2
         
         # this is a matrix that contains within-population allele frequencies
         k2ps <- do.call(
@@ -169,10 +176,13 @@ fst_wc <- function(X, labs, indexes_keep = NULL, loci_on_cols = FALSE) {
         ) * s2s / r +
         c2 * hbars / ( r * ( nbar - 1 ) * 4 )
         
-        # append to global data (for all chunks)
-        FstTs <- c(FstTs, FstTsi)
-        FstBs <- c(FstBs, FstBsi)
-        mafs <- c(mafs, p_anc_hat) # keep track of MAF too
+        # copy chunk data to global vectors (containing all chunks)
+        FstTs[ indexes_loci_chunk ] <- FstTsi
+        FstBs[ indexes_loci_chunk ] <- FstBsi
+        mafs[ indexes_loci_chunk ] <- p_anc_hat
+        
+        # update starting point for next chunk! (overshoots at the end, that's ok)
+        mci <- mci + mc
     }
 
     # compute global mean Fst! (the non-bootstrap final estimate across SNPs)
@@ -182,8 +192,6 @@ fst_wc <- function(X, labs, indexes_keep = NULL, loci_on_cols = FALSE) {
     fst_loci <- FstTs / FstBs
     
     # return an object with the mean and the raw data for bootstrapping (matrix of Fst parts: top and bottom, separating each SNP)
-    # can also just return value if that's all we want (for non-bootstrap approaches)
-    # main thing to return
     return(
         list(
             fst = fst,

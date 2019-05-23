@@ -1,6 +1,6 @@
 Package: popkinsuppl
 Title: Supplement to popkin package
-Version: 1.0.0.9000
+Version: 1.0.1.9000
 Authors@R: c(
     person(given = "Alejandro",
 	   family = "Ochoa",

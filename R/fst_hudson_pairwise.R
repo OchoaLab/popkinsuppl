@@ -47,6 +47,11 @@
 #'
 #' @export
 fst_hudson_pairwise <- function(X, labs, pops = NULL) {
+    if (missing(X))
+        stop('Genotype matrix `X` is required!')
+    if (missing(labs))
+        stop('Subpopulation labels `labs` are required!')
+
     # default is to place subpops alphabetically in matrix
     if (is.null(pops))
         pops <- sort(unique(labs))
@@ -63,11 +68,11 @@ fst_hudson_pairwise <- function(X, labs, pops = NULL) {
         for (j in 1:(i-1)) {
             pop_j <- pops[j]
             # these are TRUE for individuals from these two populations only
-            indexes_keep <- labs %in% c(pop_i, pop_j)
+            ind_keep <- labs %in% c(pop_i, pop_j)
             
             # and this is the pairwise Fst (because there are only two kinds of labels in input)
-            # NOTE: X gets filtered by indexes_keep, but labs should be pre-filtered!
-            fst_ij <- fst_hudson_k(X, labs[ indexes_keep ], indexes_keep = indexes_keep)$fst
+            # NOTE: X gets filtered by ind_keep, but labs should be pre-filtered!
+            fst_ij <- fst_hudson_k( X, labs[ ind_keep ], ind_keep = ind_keep )$fst
             
             # store both ways
             pwfst_hudson[i, j] <- fst_ij
