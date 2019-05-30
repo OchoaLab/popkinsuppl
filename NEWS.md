@@ -8,3 +8,7 @@
   * Improved speed and memory usage
   * Added `m` option, required when genotypes are passed via a function (rare)
   * Renamed option `indexes_keep` to `ind_keep`, corrected documentation to say it filters individuals (incorrectly said it filtered loci).
+
+# 2019-05-30 - popkinsuppl 1.0.2.9000
+
+* Added `kinship_std_limit`

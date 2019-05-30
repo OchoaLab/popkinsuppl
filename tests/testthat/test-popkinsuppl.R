@@ -258,3 +258,30 @@ test_that("kinship_std MOR agrees with naive formula (admits fixed loci)", {
     expect_equal( kinship, kinship_naive )
 })
 
+test_that("kinship_std_limit works", {
+    # construct a dummy kinship matrix
+    kinship <- matrix(
+        c(
+            0.6, 0.1, 0,
+            0.1, 0.6, 0.1,
+            0, 0.1, 0.6
+        ),
+        nrow = 3
+    )
+    # this is its biased limit
+    # (uniform weights)
+    kinship_biased_limit <- kinship_std_limit(kinship)
+    
+    # validate output!
+    expect_silent( popkin::validate_kinship(kinship_biased_limit) )
+
+    # match dims (already tested to be square by validate_kinship, so just check once)
+    expect_equal( nrow(kinship), nrow( kinship_biased_limit ) )
+
+    # zero overall mean
+    expect_equal( mean( kinship_biased_limit ), 0 )
+
+    # zero mean in every row
+    # this max(abs(x)) boils it down to a single comparison
+    expect_equal( max(abs(rowMeans( kinship_biased_limit ))), 0 )
+})
