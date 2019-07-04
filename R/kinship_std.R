@@ -8,8 +8,8 @@
 #' @param n The number of individuals.
 #' Required if `X` is a function, ignored otherwise.
 #' @param mean_of_ratios The standard kinship estimator can be computed in two broad forms.
-#' If `TRUE` (default) the ratio-of-means version is computed, which behaves more favorably and has a known asymptotic bias.
-#' If `FALSE`, the mean-of-ratios version is computed, which is more variable and has an uncharacterized bias, but is most common in the literature.
+#' If `FALSE` (default) the ratio-of-means version is computed, which behaves more favorably and has a known asymptotic bias.
+#' If `TRUE`, the mean-of-ratios version is computed, which is more variable and has an uncharacterized bias, but is most common in the literature.
 #' @param loci_on_cols Determines the orientation of the genotype matrix (by default, `FALSE`, loci are along the rows).
 #' Set automatically to `TRUE` if `X` is a BEDMatrix object.
 #'

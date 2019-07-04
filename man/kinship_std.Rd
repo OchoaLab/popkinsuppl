@@ -13,8 +13,8 @@ kinship_std(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE)
 Required if \code{X} is a function, ignored otherwise.}
 
 \item{mean_of_ratios}{The standard kinship estimator can be computed in two broad forms.
-If \code{TRUE} (default) the ratio-of-means version is computed, which behaves more favorably and has a known asymptotic bias.
-If \code{FALSE}, the mean-of-ratios version is computed, which is more variable and has an uncharacterized bias, but is most common in the literature.}
+If \code{FALSE} (default) the ratio-of-means version is computed, which behaves more favorably and has a known asymptotic bias.
+If \code{TRUE}, the mean-of-ratios version is computed, which is more variable and has an uncharacterized bias, but is most common in the literature.}
 
 \item{loci_on_cols}{Determines the orientation of the genotype matrix (by default, \code{FALSE}, loci are along the rows).
 Set automatically to \code{TRUE} if \code{X} is a BEDMatrix object.}

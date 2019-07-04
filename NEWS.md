@@ -12,3 +12,9 @@
 # 2019-05-30 - popkinsuppl 1.0.2.9000
 
 * Added `kinship_std_limit`
+
+# 2019-07-04 - popkinsuppl 1.0.3.9000
+
+* Fixed error in `kinship_std` description of `mean_of_ratios` parameter.
+  Now it correctly says that `FALSE` is the default value.
+
