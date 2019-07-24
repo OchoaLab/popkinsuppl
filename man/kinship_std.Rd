@@ -21,6 +21,7 @@ Set automatically to \code{TRUE} if \code{X} is a BEDMatrix object.}
 }
 \value{
 The estimated kinship matrix.
+If \eqn{X} has names for the individuals, they will be copied to the rows and columns of this kinship matrix.
 }
 \description{
 This function constructs the standard kinship estimates for a given genotype matrix.

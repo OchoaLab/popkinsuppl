@@ -14,6 +14,7 @@
 #' Set automatically to `TRUE` if `X` is a BEDMatrix object.
 #'
 #' @return The estimated kinship matrix.
+#' If \eqn{X} has names for the individuals, they will be copied to the rows and columns of this kinship matrix.
 #'
 #' @examples
 #' # dimensions of simulated data
@@ -68,6 +69,8 @@ kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE)
     } 
 
     # extract dimensions from data (not possible for function version)
+    # also get individual names (IDs)
+    namesX <- NULL # default
     if (isFn) {
         # have to define as NA to pass to get_mem_lim_m below
         m <- NA
@@ -78,12 +81,14 @@ kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE)
             
             n <- nrow(X)
             m <- ncol(X)
+            namesX <- rownames(X)
         } else {
             if (!is.na(n) && n != ncol(X)) 
                 warning('User set number of samples that does not match X dimensions (will go with latter): ', n, ' != ', ncol(X))
             
             n <- ncol(X)
             m <- nrow(X)
+            namesX <- colnames(X)
         }
     } 
     
@@ -94,6 +99,14 @@ kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE)
     M <- matrix(0, nrow = n, ncol = n) # normalization now varies per individual pair
     nu <- 0 # scalar normalization = mean p(1-p)
     m_nu <- 0 # to average nu (almost equal to m, but must remove completely fixed loci)
+    
+    # transfer names from X to A if present
+    # this will carry over all the way to the final kinship matrix!
+    # (M need not have names at all)
+    if (!is.null(namesX)) {
+        colnames(A) <- namesX
+        rownames(A) <- namesX
+    }
     
     # navigate chunks
     mci <- 1 # start of first chunk (needed for matrix inputs only; as opposed to function inputs)
