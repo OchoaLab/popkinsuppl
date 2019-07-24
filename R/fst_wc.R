@@ -104,7 +104,7 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE) {
     mafs <- vector('numeric', m)
     
     # calculate chunk size given available memory
-    mc <- get_mem_lim_m_WC(m, n, r)
+    mc <- get_mem_lim_m_WC(n = n, r = r, m = m)
     
     # navigate chunks
     mci <- 1 # start of first chunk (needed for matrix inputs only; as opposed to function inputs)

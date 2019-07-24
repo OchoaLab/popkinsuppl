@@ -95,7 +95,7 @@ fst_hudson_k <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE)
     FstBs <- vector('numeric', m)
 
     # use the same formula as for WC (the largest matrices are the same size)
-    mc <- get_mem_lim_m_WC(m, n, r)
+    mc <- get_mem_lim_m_WC(n = n, r = r, m = m)
     
     # navigate chunks
     mci <- 1 # start of first chunk (needed for matrix inputs only; as opposed to function inputs)

@@ -87,7 +87,7 @@ kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE)
         }
     } 
     
-    mc <- get_mem_lim_m_kinship_std(m, n)
+    mc <- get_mem_lim_m_kinship_std(m = m, n = n)
     
     # initialize desired matrix
     A <- matrix(0, nrow = n, ncol = n)
