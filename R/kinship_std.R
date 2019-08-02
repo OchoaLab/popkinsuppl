@@ -12,6 +12,11 @@
 #' If `TRUE`, the mean-of-ratios version is computed, which is more variable and has an uncharacterized bias, but is most common in the literature.
 #' @param loci_on_cols Determines the orientation of the genotype matrix (by default, `FALSE`, loci are along the rows).
 #' Set automatically to `TRUE` if `X` is a BEDMatrix object.
+#' @param mem_factor Proportion of available memory to use loading and processing genotypes.
+#' Ignored if `mem_lim` is not `NA`.
+#' @param mem_lim Memory limit in GB, used to break up genotype data into chunks for very large datasets.
+#' Note memory usage is somewhat underestimated and is not controlled strictly.
+#' Default in Linux and Windows is `mem_factor` times the free system memory, otherwise it is 1GB (OSX and other systems).
 #'
 #' @return The estimated kinship matrix.
 #' If \eqn{X} has names for the individuals, they will be copied to the rows and columns of this kinship matrix.
@@ -49,7 +54,7 @@
 #' The popkin package.
 #'
 #' @export
-kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE) {
+kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE, mem_factor = 0.7, mem_lim = NA) {
     # SUPER low-mem version that processes input as it is read
     # NOTE: below I kept "A" notation, but this is kinship_std
     
@@ -92,7 +97,29 @@ kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE)
         }
     } 
     
-    mc <- get_mem_lim_m_kinship_std(m = m, n = n)
+    # estimating total memory usage in bytes
+    # A = n*n*8+mo
+    # M = n*n*8+mo
+    # Xi = m*n*4+mo # initial int version
+    # Pi = m*8+ao
+    # Xi = m*n*8+mo # centered version is type double
+    # is.na(Xi) = m*n*4+mo # ignore (NEWEST) or count once (NEW) or appears twice (OLD)
+    # !is.na(Xi) = m*n*8+mo # gets turned into double when input to tcrossprod
+    # M = n*n*8+mo # introduce again as we update it in addition
+    # Xi = m*n*8+mo # ignore (NEWEST) or introduce again as it is updated (replacing NAs with zeroes; OLD)
+    # A = n*n*8+mo # introduce again as we update it in addition
+    # Pi*(1-Pi) = 2*(m*8+ao) # two temporary arrays in computing this
+    
+    data <- popkin:::solve_m_mem_lim(
+                         n = n,
+                         m = m,
+                         mat_m_n = 2.5,
+                         mat_n_n = 4,
+                         vec_m = 3,
+                         mem = mem_lim,
+                         mem_factor = mem_factor
+                     )
+    mc <- data$m_chunk
     
     # initialize desired matrix
     A <- matrix(0, nrow = n, ncol = n)

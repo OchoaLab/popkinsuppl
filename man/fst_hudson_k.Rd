@@ -4,7 +4,8 @@
 \alias{fst_hudson_k}
 \title{The Generalized "Hudson" FST estimator}
 \usage{
-fst_hudson_k(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE)
+fst_hudson_k(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE,
+  mem_factor = 0.7, mem_lim = NA)
 }
 \arguments{
 \item{X}{The genotype matrix (BEDMatrix, regular R matrix, or function, same as \code{popkin}).}
@@ -18,6 +19,13 @@ In particular, \code{m} is obtained from \code{X} when it is a BEDMatrix or a re
 
 \item{loci_on_cols}{Determines the orientation of the genotype matrix (by default, \code{FALSE}, loci are along the rows).
 Set automatically to \code{TRUE} if \code{X} is a BEDMatrix object.}
+
+\item{mem_factor}{Proportion of available memory to use loading and processing genotypes.
+Ignored if \code{mem_lim} is not \code{NA}.}
+
+\item{mem_lim}{Memory limit in GB, used to break up genotype data into chunks for very large datasets.
+Note memory usage is somewhat underestimated and is not controlled strictly.
+Default in Linux and Windows is \code{mem_factor} times the free system memory, otherwise it is 1GB (OSX and other systems).}
 }
 \value{
 A list with the following named elements, in this order:
