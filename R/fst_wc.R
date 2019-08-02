@@ -136,17 +136,17 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
                          mem = mem_lim,
                          mem_factor = mem_factor
                      )
-    mc <- data$m_chunk
+    m_chunk <- data$m_chunk
     
     # navigate chunks
-    mci <- 1 # start of first chunk (needed for matrix inputs only; as opposed to function inputs)
+    i_chunk <- 1 # start of first chunk (needed for matrix inputs only; as opposed to function inputs)
     while(TRUE) { # start an infinite loop, break inside as needed
         # indexes to extract loci, and also so save to FstTs and FstBs vectors
-        indexes_loci_chunk <- mci : min(mci + mc - 1, m)
+        indexes_loci_chunk <- i_chunk : min(i_chunk + m_chunk - 1, m)
         
         if (isFn) {
-            # get next "mc" SNPs
-            Xi <- X( mc, ind_keep )
+            # get next "m_chunk" SNPs
+            Xi <- X( m_chunk, ind_keep )
 
             # stop when SNPs run out (only happens for functions X, not matrices)
             if (is.null(Xi))
@@ -154,7 +154,7 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
             
         } else {
             # this means all SNPs have been covered!
-            if (mci > m)
+            if (i_chunk > m)
                 break
             
             # is this more efficient than setting ind_keep<-1:n and subsetting?
@@ -214,7 +214,7 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
         mafs[ indexes_loci_chunk ] <- p_anc_hat
         
         # update starting point for next chunk! (overshoots at the end, that's ok)
-        mci <- mci + mc
+        i_chunk <- i_chunk + m_chunk
     }
 
     # compute global mean Fst! (the non-bootstrap final estimate across SNPs)

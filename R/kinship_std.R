@@ -75,7 +75,7 @@ kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE,
 
     # extract dimensions from data (not possible for function version)
     # also get individual names (IDs)
-    namesX <- NULL # default
+    names_X <- NULL # default
     if (isFn) {
         # have to define as NA to pass to get_mem_lim_m below
         m <- NA
@@ -86,14 +86,14 @@ kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE,
             
             n <- nrow(X)
             m <- ncol(X)
-            namesX <- rownames(X)
+            names_X <- rownames(X)
         } else {
             if (!is.na(n) && n != ncol(X)) 
                 warning('User set number of samples that does not match X dimensions (will go with latter): ', n, ' != ', ncol(X))
             
             n <- ncol(X)
             m <- nrow(X)
-            namesX <- colnames(X)
+            names_X <- colnames(X)
         }
     } 
     
@@ -119,7 +119,7 @@ kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE,
                          mem = mem_lim,
                          mem_factor = mem_factor
                      )
-    mc <- data$m_chunk
+    m_chunk <- data$m_chunk
     
     # initialize desired matrix
     A <- matrix(0, nrow = n, ncol = n)
@@ -130,17 +130,17 @@ kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE,
     # transfer names from X to A if present
     # this will carry over all the way to the final kinship matrix!
     # (M need not have names at all)
-    if (!is.null(namesX)) {
-        colnames(A) <- namesX
-        rownames(A) <- namesX
+    if (!is.null(names_X)) {
+        colnames(A) <- names_X
+        rownames(A) <- names_X
     }
     
     # navigate chunks
-    mci <- 1 # start of first chunk (needed for matrix inputs only; as opposed to function inputs)
+    i_chunk <- 1 # start of first chunk (needed for matrix inputs only; as opposed to function inputs)
     while(TRUE) { # start an infinite loop, break inside as needed
         if (isFn) {
-            # get next "mc" SNPs
-            Xi <- X( mc )
+            # get next "m_chunk" SNPs
+            Xi <- X( m_chunk )
 
             # stop when SNPs run out (only happens for functions X, not matrices)
             if (is.null(Xi))
@@ -149,35 +149,35 @@ kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE,
             # here m is known...
 
             # this means all SNPs have been covered!
-            if (mci > m)
+            if (i_chunk > m)
                 break
 
             # range of SNPs to extract in this chunk
-            is <- mci : min(mci + mc - 1, m)
+            indexes_loci_chunk <- i_chunk : min(i_chunk + m_chunk - 1, m)
             
             if (loci_on_cols) {
-                Xi <- t(X[, is, drop = FALSE]) # transpose for our usual setup
+                Xi <- t(X[, indexes_loci_chunk, drop = FALSE]) # transpose for our usual setup
             } else  {
-                Xi <- X[is, , drop = FALSE]
+                Xi <- X[indexes_loci_chunk, , drop = FALSE]
             }
 
             # update starting point for next chunk! (overshoots at the end, that's ok)
-            mci <- mci + mc
+            i_chunk <- i_chunk + m_chunk
         }
 
         # standard mean times half
         Pi <- rowMeans(Xi, na.rm = TRUE) / 2
         
-        # variance estimate (length-mci vector; factor of 2 or 4 added at the end)
+        # variance estimate (length-i_chunk vector; factor of 2 or 4 added at the end)
         Vi <- Pi * ( 1 - Pi )
         
         # in the mean_of_ratios formulation it's extra critical to handle fixed loci correctly... but let's just do the same thing both ways
-        is <- Vi > 0 # these are the good cases
+        indexes_not_fixed <- Vi > 0 # these are the good cases
         # filter everything if needed (will increase memory but it's easy to see things are handled correctly)
-        if (any(!is)) {
-            Xi <- Xi[is,]
-            Pi <- Pi[is]
-            Vi <- Vi[is]
+        if (any(!indexes_not_fixed)) {
+            Xi <- Xi[indexes_not_fixed,]
+            Pi <- Pi[indexes_not_fixed]
+            Vi <- Vi[indexes_not_fixed]
         }
 
         # center before cross product...
