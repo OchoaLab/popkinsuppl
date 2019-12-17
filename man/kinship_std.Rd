@@ -4,8 +4,14 @@
 \alias{kinship_std}
 \title{Standard kinship estimator}
 \usage{
-kinship_std(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE,
-  mem_factor = 0.7, mem_lim = NA)
+kinship_std(
+  X,
+  n = NA,
+  mean_of_ratios = FALSE,
+  loci_on_cols = FALSE,
+  mem_factor = 0.7,
+  mem_lim = NA
+)
 }
 \arguments{
 \item{X}{The genotype matrix (BEDMatrix, regular R matrix, or function, same as \code{popkin}).}

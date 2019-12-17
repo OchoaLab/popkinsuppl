@@ -4,8 +4,15 @@
 \alias{fst_wc}
 \title{The Weir-Cockerham FST estimator}
 \usage{
-fst_wc(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE,
-  mem_factor = 0.7, mem_lim = NA)
+fst_wc(
+  X,
+  labs,
+  m = NA,
+  ind_keep = NULL,
+  loci_on_cols = FALSE,
+  mem_factor = 0.7,
+  mem_lim = NA
+)
 }
 \arguments{
 \item{X}{The genotype matrix (BEDMatrix, regular R matrix, or function, same as \code{popkin}).}

@@ -26,3 +26,8 @@
 # 2019-08-02 - popkinsuppl 1.0.5.9000
 
 * Internal changes to match updated `solve_m_mem_lim` from the `popkin` package (>= 1.2.6.9000).
+
+# 2019-12-17 - popkinsuppl 1.0.6.9000
+
+* Preemptively updated `class` usage now that matrices return a two-element array in R-devel
+* Minor Roxygen-related updates

@@ -12,14 +12,14 @@ preprocess_genotype_obj_fst <- function(X, n, m = NA, loci_on_cols = FALSE, ind_
     # determine some behaviors depending on data type
     # first validate class and set key booleans
     isFn <- FALSE
-    if (class(X) == 'function') {
+    if ( is.function(X) ) {
         isFn <- TRUE
         if (is.na(m))
             stop('The number of loci `m` is required when `X` is a function!')
-    } else if (class(X) == 'BEDMatrix') { # same as general matrix but transposed
+    } else if ( 'BEDMatrix' %in% class(X) ) { # same as general matrix but transposed
         loci_on_cols <- TRUE # this is always imposed for this particular format!
     } else if (!is.matrix(X)) {
-        stop('X has unsupported class: ', class(X))
+        stop('X has unsupported class: ', toString( class(X) ) )
     } 
 
     # extract dimensions from data (not possible for function version)

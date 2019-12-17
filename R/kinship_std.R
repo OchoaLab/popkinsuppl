@@ -61,16 +61,16 @@ kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE,
     # determine some behaviors depending on data type
     # first validate class and set key booleans
     isFn <- FALSE
-    if (class(X) == 'function') {
+    if ( is.function(X) ) {
         isFn <- TRUE
         if (is.na(n))
             stop('Number of individuals `n` is required when X is a function!')
-    } else if (class(X) == 'BEDMatrix') {
+    } else if ('BEDMatrix' %in% class(X)) {
         # same as general matrix but transposed
         # this is always imposed for this particular format!
         loci_on_cols <- TRUE
     } else if (!is.matrix(X)) {
-        stop('X has unsupported class: ', class(X))
+        stop('X has unsupported class: ', toString( class(X) ) )
     } 
 
     # extract dimensions from data (not possible for function version)
