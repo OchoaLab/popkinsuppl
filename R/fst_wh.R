@@ -1,6 +1,6 @@
-#' The Weir-Cockerham FST estimator
+#' The Weir-Hill FST estimator
 #'
-#' This function implements the full FST estimator from Weir and Cockerham (1984).
+#' This function implements the full FST estimator from Weir and Hill (2002) (equation 9).
 #' Handles very large data, passed as BEDMatrix or as a regular R matrix.
 #' Handles missing values correctly.
 #'
@@ -54,8 +54,8 @@
 #' # k_subpops groups of equal size
 #' labs <- ceiling( (1 : n_ind) / k_subpops )
 #'
-#' # estimate FST using the Weir-Cockerham formula
-#' fst_wc_obj <- fst_wc(X, labs)
+#' # estimate FST using the Weir-Hill formula
+#' fst_wc_obj <- fst_wh(X, labs)
 #' 
 #' # the genome-wide FST estimate
 #' fst_wc_obj$fst
@@ -67,7 +67,7 @@
 #' The popkin package.
 #'
 #' @export
-fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_factor = 0.7, mem_lim = NA) {
+fst_wh <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_factor = 0.7, mem_lim = NA) {
     if (missing(X))
         stop('Genotype matrix `X` is required!')
     if (missing(labs))
@@ -76,7 +76,7 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
     # this is always given through labs
     n <- length(labs)
 
-    # shared with Hudson estimator...
+    # shared with WC and Hudson estimator...
     obj <- preprocess_genotype_obj_fst(
         X = X,
         n = n,
@@ -96,11 +96,18 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
     k2n <- out$k2n
     r <- length(k2n)
     
-    # now compute these WC-specific things
-    nbar <- mean(k2n)
-    
-    # compute this C^2 coefficient of variation of sample sizes...
-    c2 <- ( mean( k2n^2 ) / nbar^2 - 1) * r / ( r - 1 )
+    # now compute these WH-specific things
+    # weights for subpopulations
+    k2w <- k2n / sum(k2n)
+    # some other sample sizes that contain weights themselves
+    k2nc <- k2n * (1 - k2w)
+    # the sum of these things
+    nc_sum <- sum( k2nc )
+    # and even more normalized things, which appear on sums often
+    # sorry for the cryptic names, there's no good descriptions of these monsters
+    k2ndnc <- k2n / nc_sum
+    k2wc <- k2nc / nc_sum
+    k2wcu <- k2wc - k2w * (2 * k2n) / (2 * k2n - 1)
     
     # initialize these vectors
     # Do before get_mem_lim_m so free memory is accounted for properly
@@ -109,30 +116,28 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
     mafs <- vector('numeric', m)
     
     # estimating total memory usage in bytes
-    # Pi = m*8+ao
+    # p_anc_hat = m*8+ao
     # k2ps = m*r*8+mo
     # Xi[, k2is[[k]] ] = m*(n/r)*8+mo # on average, let's be conservative: m*n*8+mo
     # (k2ps-Pi)^2 = m*r*8+mo # intermediate calculation, unnamed?
     # s2s = m*8+ao # final length
-    # nus = m*8+ao # another vector
-    # Xi == 1 = m*n*4+mo # intermediate matrix, one of the bigger ones!
-    # hbars = m*8+ao
+    # p_q_hats = m*r*8+mo # new in WH
     # FstTsi = m*8+ao
     # FstBsi = m*8+ao
-
+    
     # the general function doesn't have an "r" input, but since "n" only enters in m*n matrices and so does "r", we can hack it all to have an effective "n" that combines both
     # Have:
     # - 1.5 m*n (input int matrix, plus 1 subpop extract)
-    # - 2 m*r
+    # - 3 m*r
     # since there's no other n's this is equivalent to
-    # n = 1.5 * n + 2 * r
+    # n = 1.5 * n + 3 * r
     
     # calculate chunk size given available memory
     data <- popkin:::solve_m_mem_lim(
-                         n = 1.5 * n + 2 * r,
+                         n = 1.5 * n + 3 * r,
                          m = m,
                          mat_m_n = 1, # left simple to not confound with above `n` hack
-                         vec_m = 6,
+                         vec_m = 4,
                          mem = mem_lim,
                          mem_factor = mem_factor
                      )
@@ -186,27 +191,15 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
             )
         ) / 2
         # a vector of estimated variances
-        s2s <- drop( ( k2ps - p_anc_hat )^2 %*% k2n ) / ( nbar * ( r - 1 ) )
-        # and the p * (1-p) estimate
-        p_q_hat <- p_anc_hat * ( 1 - p_anc_hat )
+        s2s <- drop( ( k2ps - p_anc_hat )^2 %*% k2ndnc )
+        # and the p * (1-p) estimates per subpopulation (r by m matrix)
+        p_q_hats <- k2ps * ( 1 - k2ps )
         
-        # compute Fst parts (tops and bottoms) for each locus using this method
-        # keeping them separate facilitates bootstrapping, which we'll attempt at some point
-        hbars <- rowMeans(Xi == 1, na.rm = TRUE)
-
+        # the actual estimates weighted as they appear in paper
         # top
-        FstTsi <- s2s - (
-            p_q_hat - (r - 1) / r * s2s - hbars / 4
-        ) / ( nbar - 1 )
-
+        FstTsi <- s2s + drop( p_q_hats %*% k2wcu )
         # bottom
-        FstBsi <- (
-            1 - nbar * c2 / r / ( nbar - 1 )
-        ) * p_q_hat +
-        (
-            1 + (r-1) * nbar * c2 / r / ( nbar - 1 )
-        ) * s2s / r +
-        c2 * hbars / ( r * ( nbar - 1 ) * 4 )
+        FstBsi <- s2s + drop( p_q_hats %*% k2wc )
         
         # copy chunk data to global vectors (containing all chunks)
         FstTs[ indexes_loci_chunk ] <- FstTsi

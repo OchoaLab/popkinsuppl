@@ -31,3 +31,7 @@
 
 * Preemptively updated `class` usage now that matrices return a two-element array in R-devel
 * Minor Roxygen-related updates
+
+# 2020-01-29 - popkinsuppl 1.0.7.9000
+
+* Implemented the Weir-Hill 2002 FST estimator (`fst_wh`).

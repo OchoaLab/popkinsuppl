@@ -83,6 +83,13 @@ fst_wc_obj$fst
 # vector of per-locus FST estimates
 fst_wc_obj$fst_loci
 
+# estimate FST using the Weir-Hill formula
+fst_wh_obj <- fst_wh(X, labs)
+# the genome-wide FST estimate
+fst_wh_obj$fst
+# vector of per-locus FST estimates
+fst_wh_obj$fst_loci
+
 # estimate FST using the "Hudson" formula
 fst_hudson_k_obj <- fst_hudson_k(X, labs)
 # the genome-wide FST estimate

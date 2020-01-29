@@ -27,6 +27,8 @@ X <- matrix(X, nrow = m_loci, ncol = n_ind)
 # k_subpops groups of equal size
 labs <- ceiling( (1 : n_ind) / k_subpops )
 
+
+
 test_that("kinship_std ROM works", {
     # test ratio-of-means version
     kinship <- kinship_std(X)
@@ -54,6 +56,34 @@ test_that("kinship_std MOR works", {
 test_that("fst_wc works", {
     # estimate FST using the Weir-Cockerham formula
     obj <- fst_wc(X, labs)
+
+    # test overall object
+    expect_true( is.list(obj) )
+    expect_equal( length(obj), 4 )
+    expect_equal( names(obj), c('fst', 'fst_loci', 'data', 'maf') )
+    
+    # the genome-wide FST estimate
+    expect_true( is.numeric(obj$fst) )
+    expect_equal( length(obj$fst), 1 )
+    
+    # vector of per-locus FST estimates
+    expect_true( is.numeric(obj$fst_loci) )
+    expect_equal( length(obj$fst_loci), m_loci )
+    
+    # vector of MAFs
+    expect_true( is.numeric(obj$maf) )
+    expect_equal( length(obj$maf), m_loci )
+
+    # FST data matrix
+    expect_true( is.numeric(obj$data) )
+    expect_true( is.matrix(obj$data) )
+    expect_equal( nrow(obj$data), m_loci )
+    expect_equal( ncol(obj$data), 2 )
+})
+
+test_that("fst_wh works", {
+    # estimate FST using the Weir-Hill formula
+    obj <- fst_wh(X, labs)
 
     # test overall object
     expect_true( is.list(obj) )

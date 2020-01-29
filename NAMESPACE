@@ -3,5 +3,6 @@
 export(fst_hudson_k)
 export(fst_hudson_pairwise)
 export(fst_wc)
+export(fst_wh)
 export(kinship_std)
 export(kinship_std_limit)
