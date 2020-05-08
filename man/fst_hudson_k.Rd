@@ -17,7 +17,8 @@ fst_hudson_k(
 \arguments{
 \item{X}{The genotype matrix (BEDMatrix, regular R matrix, or function, same as \code{popkin}).}
 
-\item{labs}{A vector of subpopulation assignments for every individual.}
+\item{labs}{A vector of subpopulation assignments for every individual.
+At least two subpoplations must be present.}
 
 \item{m}{The number of loci, required if \code{X} is a function (ignored otherwise).
 In particular, \code{m} is obtained from \code{X} when it is a BEDMatrix or a regular R matrix.}

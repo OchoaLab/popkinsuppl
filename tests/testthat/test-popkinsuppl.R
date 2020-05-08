@@ -23,10 +23,21 @@ X[ sample(X, n_data * miss) ] <- NA
 # turn into a matrix
 X <- matrix(X, nrow = m_loci, ncol = n_ind)
 
+# remove rows that are entirely missing and/or fixed
+p_anc_hat <- rowMeans( X, na.rm = TRUE ) # MAFs
+indexes <- !is.na( p_anc_hat ) & p_anc_hat > 0 & p_anc_hat < 1 # keep these
+# apply filters
+X <- X[ indexes, ]
+# update this to match
+m_loci <- nrow( X )
+
 # create subpopulation labels
 # k_subpops groups of equal size
 labs <- ceiling( (1 : n_ind) / k_subpops )
 
+# create a more difficult case where there are lots of small subpopulations
+# here each subpopulation nas one individual only, creating lots of subpops with NAs
+labs1 <- 1 : n_ind
 
 
 test_that("kinship_std ROM works", {
@@ -34,6 +45,7 @@ test_that("kinship_std ROM works", {
     kinship <- kinship_std(X)
 
     expect_true( is.numeric(kinship) )
+    expect_true( !anyNA(kinship) )
 
     # test dimensions
     expect_true( is.matrix(kinship) )
@@ -46,6 +58,7 @@ test_that("kinship_std MOR works", {
     kinship <- kinship_std(X, mean_of_ratios = TRUE)
     
     expect_true( is.numeric(kinship) )
+    expect_true( !anyNA(kinship) )
     
     # test dimensions
     expect_true( is.matrix(kinship) )
@@ -65,20 +78,56 @@ test_that("fst_wc works", {
     # the genome-wide FST estimate
     expect_true( is.numeric(obj$fst) )
     expect_equal( length(obj$fst), 1 )
+    expect_true( !is.na(obj$fst) )
     
     # vector of per-locus FST estimates
     expect_true( is.numeric(obj$fst_loci) )
     expect_equal( length(obj$fst_loci), m_loci )
+    expect_true( !anyNA( obj$fst_loci ) )
     
     # vector of MAFs
     expect_true( is.numeric(obj$maf) )
     expect_equal( length(obj$maf), m_loci )
+    expect_true( !anyNA( obj$maf ) )
 
     # FST data matrix
     expect_true( is.numeric(obj$data) )
     expect_true( is.matrix(obj$data) )
     expect_equal( nrow(obj$data), m_loci )
     expect_equal( ncol(obj$data), 2 )
+    expect_true( !anyNA( obj$data ) )
+})
+
+test_that("fst_wc works singleton subpops", {
+    # estimate FST using the Weir-Cockerham formula
+    obj <- fst_wc(X, labs1)
+
+    # test overall object
+    expect_true( is.list(obj) )
+    expect_equal( length(obj), 4 )
+    expect_equal( names(obj), c('fst', 'fst_loci', 'data', 'maf') )
+    
+    # the genome-wide FST estimate
+    expect_true( is.numeric(obj$fst) )
+    expect_equal( length(obj$fst), 1 )
+    expect_true( !is.na(obj$fst) )
+    
+    # vector of per-locus FST estimates
+    expect_true( is.numeric(obj$fst_loci) )
+    expect_equal( length(obj$fst_loci), m_loci )
+    expect_true( !anyNA( obj$fst_loci ) )
+    
+    # vector of MAFs
+    expect_true( is.numeric(obj$maf) )
+    expect_equal( length(obj$maf), m_loci )
+    expect_true( !anyNA( obj$maf ) )
+
+    # FST data matrix
+    expect_true( is.numeric(obj$data) )
+    expect_true( is.matrix(obj$data) )
+    expect_equal( nrow(obj$data), m_loci )
+    expect_equal( ncol(obj$data), 2 )
+    expect_true( !anyNA( obj$data ) )
 })
 
 test_that("fst_wh works", {
@@ -93,20 +142,56 @@ test_that("fst_wh works", {
     # the genome-wide FST estimate
     expect_true( is.numeric(obj$fst) )
     expect_equal( length(obj$fst), 1 )
+    expect_true( !is.na(obj$fst) )
     
     # vector of per-locus FST estimates
     expect_true( is.numeric(obj$fst_loci) )
     expect_equal( length(obj$fst_loci), m_loci )
+    expect_true( !anyNA( obj$fst_loci ) )
     
     # vector of MAFs
     expect_true( is.numeric(obj$maf) )
     expect_equal( length(obj$maf), m_loci )
+    expect_true( !anyNA( obj$maf ) )
 
     # FST data matrix
     expect_true( is.numeric(obj$data) )
     expect_true( is.matrix(obj$data) )
     expect_equal( nrow(obj$data), m_loci )
     expect_equal( ncol(obj$data), 2 )
+    expect_true( !anyNA( obj$data ) )
+})
+
+test_that("fst_wh works singleton subpops", {
+    # estimate FST using the Weir-Hill formula
+    obj <- fst_wh(X, labs1)
+
+    # test overall object
+    expect_true( is.list(obj) )
+    expect_equal( length(obj), 4 )
+    expect_equal( names(obj), c('fst', 'fst_loci', 'data', 'maf') )
+    
+    # the genome-wide FST estimate
+    expect_true( is.numeric(obj$fst) )
+    expect_equal( length(obj$fst), 1 )
+    expect_true( !is.na(obj$fst) )
+    
+    # vector of per-locus FST estimates
+    expect_true( is.numeric(obj$fst_loci) )
+    expect_equal( length(obj$fst_loci), m_loci )
+    expect_true( !anyNA( obj$fst_loci ) )
+    
+    # vector of MAFs
+    expect_true( is.numeric(obj$maf) )
+    expect_equal( length(obj$maf), m_loci )
+    expect_true( !anyNA( obj$maf ) )
+
+    # FST data matrix
+    expect_true( is.numeric(obj$data) )
+    expect_true( is.matrix(obj$data) )
+    expect_equal( nrow(obj$data), m_loci )
+    expect_equal( ncol(obj$data), 2 )
+    expect_true( !anyNA( obj$data ) )
 })
 
 test_that("fst_hudson_k works", {
@@ -121,16 +206,46 @@ test_that("fst_hudson_k works", {
     # the genome-wide FST estimate
     expect_true( is.numeric(obj$fst) )
     expect_equal( length(obj$fst), 1 )
+    expect_true( !is.na(obj$fst) )
     
     # vector of per-locus FST estimates
     expect_true( is.numeric(obj$fst_loci) )
     expect_equal( length(obj$fst_loci), m_loci )
+    expect_true( !anyNA( obj$fst_loci ) )
     
     # FST data matrix
     expect_true( is.numeric(obj$data) )
     expect_true( is.matrix(obj$data) )
     expect_equal( nrow(obj$data), m_loci )
     expect_equal( ncol(obj$data), 2 )
+    expect_true( !anyNA( obj$data ) )
+})
+
+test_that("fst_hudson_k works singleton subpops", {
+    # estimate FST using the Weir-Cockerham formula
+    obj <- fst_hudson_k(X, labs1)
+
+    # test overall object
+    expect_true( is.list(obj) )
+    expect_equal( length(obj), 3 )
+    expect_equal( names(obj), c('fst', 'fst_loci', 'data') )
+    
+    # the genome-wide FST estimate
+    expect_true( is.numeric(obj$fst) )
+    expect_equal( length(obj$fst), 1 )
+    expect_true( !is.na(obj$fst) )
+    
+    # vector of per-locus FST estimates
+    expect_true( is.numeric(obj$fst_loci) )
+    expect_equal( length(obj$fst_loci), m_loci )
+    expect_true( !anyNA( obj$fst_loci ) )
+    
+    # FST data matrix
+    expect_true( is.numeric(obj$data) )
+    expect_true( is.matrix(obj$data) )
+    expect_equal( nrow(obj$data), m_loci )
+    expect_equal( ncol(obj$data), 2 )
+    expect_true( !anyNA( obj$data ) )
 })
 
 test_that("fst_hudson_pairwise works", {
@@ -139,10 +254,59 @@ test_that("fst_hudson_pairwise works", {
     
     expect_true( is.numeric(fst_hudson_matrix) )
 
+    # there should be no NAs
+    expect_true( all( !is.na(fst_hudson_matrix) ) )
+
     # test dimensions
     expect_true( is.matrix(fst_hudson_matrix) )
     expect_equal( nrow(fst_hudson_matrix), k_subpops)
     expect_equal( ncol(fst_hudson_matrix), k_subpops)
+
+    # diagonal must be zero
+    expect_equal( range(diag(fst_hudson_matrix)), c(0, 0) )
+})
+
+test_that("fst_hudson_pairwise works singleton subpops", {
+    # let's construct a smaller example (fewer individual pairs), otherwise this test is way too slow
+    
+    # dimensions of simulated data
+    n_ind <- 10
+    m_loci <- 100
+    n_data <- n_ind * m_loci
+
+    # missingness rate
+    miss <- 0.1
+
+    # simulate ancestral allele frequencies
+    # uniform (0,1)
+    # it'll be ok if some of these are zero
+    p_anc <- runif(m_loci)
+
+    # simulate some binomial data
+    X <- rbinom(n_data, 2, p_anc)
+
+    # sprinkle random missingness
+    X[ sample(X, n_data * miss) ] <- NA
+
+    # turn into a matrix
+    X <- matrix(X, nrow = m_loci, ncol = n_ind)
+
+    # create a more difficult case where there are lots of small subpopulations
+    # here each subpopulation nas one individual only, creating lots of subpops with NAs
+    labs1 <- 1 : n_ind
+    
+    # estimated pairwise FST matrix using the "Hudson" formula
+    fst_hudson_matrix <- fst_hudson_pairwise(X, labs1)
+    
+    expect_true( is.numeric(fst_hudson_matrix) )
+
+    # there should be no NAs
+    expect_true( all( !is.na(fst_hudson_matrix) ) )
+
+    # test dimensions
+    expect_true( is.matrix(fst_hudson_matrix) )
+    expect_equal( nrow(fst_hudson_matrix), n_ind )
+    expect_equal( ncol(fst_hudson_matrix), n_ind )
 
     # diagonal must be zero
     expect_equal( range(diag(fst_hudson_matrix)), c(0, 0) )

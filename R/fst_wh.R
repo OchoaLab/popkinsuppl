@@ -6,6 +6,7 @@
 #'
 #' @param X The genotype matrix (BEDMatrix, regular R matrix, or function, same as `popkin`).
 #' @param labs A vector of subpopulation assignments for every individual.
+#' At least two subpoplations must be present.
 #' @param m The number of loci, required if `X` is a function (ignored otherwise).
 #' In particular, `m` is obtained from `X` when it is a BEDMatrix or a regular R matrix.
 #' @param ind_keep An optional vector of individuals to keep (as booleans or indexes, used to subset an R matrix).
@@ -96,6 +97,9 @@ fst_wh <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
     k2n <- out$k2n
     r <- length(k2n)
     
+    if (r < 2)
+        stop('There must be two or more subpopulations!')
+
     # now compute these WH-specific things
     # weights for subpopulations
     k2w <- k2n / sum(k2n)
@@ -178,28 +182,40 @@ fst_wh <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
             }
         }
         
+        # NOTE: in the other notes below I assume there aren't rows that are entirely NA
+        # rowSums of all NAs is 0 (with na.rm = TRUE)
+        # rowMeans of all NA is NaN (with na.rm = TRUE)
+
         # estimate ancestral allele frequencies across the matrix
+        # NOTE: never NA (at least one genotype not NA per row)
         p_anc_hat <- rowMeans(Xi, na.rm = TRUE) / 2
         
         # this is a matrix that contains within-population allele frequencies
+        # NOTE: rowMeans of all NA is NaN, so some cells of this k2ps matrix may be NaNs
         k2ps <- do.call(
             cbind,
             lapply(
                 k2is,
                 function(is)
-                    rowMeans(Xi[, is], na.rm = TRUE)
+                    rowMeans(Xi[, is, drop = FALSE], na.rm = TRUE)
             )
         ) / 2
         # a vector of estimated variances
-        s2s <- drop( ( k2ps - p_anc_hat )^2 %*% k2ndnc )
+        # s2s <- drop( ( k2ps - p_anc_hat )^2 %*% k2ndnc ) # OLD, not NA-robust
+        # NOTE: this does not result in NAs
+        s2s <- rowSums( ( k2ps - p_anc_hat )^2 * k2ndnc, na.rm = TRUE )
         # and the p * (1-p) estimates per subpopulation (r by m matrix)
+        # some of these may be NaNs
         p_q_hats <- k2ps * ( 1 - k2ps )
         
         # the actual estimates weighted as they appear in paper
+        # NOTE: this does not result in NAs
         # top
-        FstTsi <- s2s + drop( p_q_hats %*% k2wcu )
+        #FstTsi <- s2s + drop( p_q_hats %*% k2wcu ) # OLD, not NA-robust
+        FstTsi <- s2s + rowSums( p_q_hats * k2wcu, na.rm = TRUE )
         # bottom
-        FstBsi <- s2s + drop( p_q_hats %*% k2wc )
+        #FstBsi <- s2s + drop( p_q_hats %*% k2wc ) # OLD, not NA-robust
+        FstBsi <- s2s + rowSums( p_q_hats * k2wc, na.rm = TRUE )
         
         # copy chunk data to global vectors (containing all chunks)
         FstTs[ indexes_loci_chunk ] <- FstTsi

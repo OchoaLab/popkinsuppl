@@ -35,3 +35,12 @@
 # 2020-01-29 - popkinsuppl 1.0.7.9000
 
 * Implemented the Weir-Hill 2002 FST estimator (`fst_wh`).
+
+# 2020-05-07 - popkinsuppl 1.0.8.9000
+
+* `fst_wc` fixed a minor bug: sample size was half as it should have been, only noticeable in very small samples.
+* Updates to `fst_wc`, `fst_wh`, `fst_hudson_k`, and `fst_hudson_pairwise`
+  * Avoids NAs in output when entire subpopulations have missing data at one locus
+  * Works correctly when there are singleton subpopulations (used to cause errors)
+  * More clear error messages for fewer than two subpopulations
+  * Expanded tests to cover these scenarios

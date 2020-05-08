@@ -6,6 +6,7 @@
 #'
 #' @param X The genotype matrix (BEDMatrix, regular R matrix, or function, same as `popkin`).
 #' @param labs A vector of subpopulation assignments for every individual.
+#' At least two subpoplations must be present.
 #' @param m The number of loci, required if `X` is a function (ignored otherwise).
 #' In particular, `m` is obtained from `X` when it is a BEDMatrix or a regular R matrix.
 #' @param ind_keep An optional vector of individuals to keep (as booleans or indexes, used to subset an R matrix).
@@ -94,6 +95,9 @@ fst_hudson_k <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE,
     k2n <- 2 * out$k2n - 1 # NOTE: in Hudson estimator, n_k is number of alleles, or here twice the number of individuals in the populations
     r <- length( k2n )
 
+    if (r < 2)
+        stop('There must be two or more subpopulations!')
+
     # initialize these vectors
     # Do before get_mem_lim_m so free memory is accounted for properly
     FstTs <- vector('numeric', m)
@@ -145,45 +149,56 @@ fst_hudson_k <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE,
                 }
             }
         }
-        
+
+        # NOTE: in the other notes below I assume there aren't rows that are entirely NA
+        # rowSums of all NAs is 0 (with na.rm = TRUE)
+        # rowMeans of all NA is NaN (with na.rm = TRUE)
+
         # this is a matrix that contains within-population allele frequencies
+        # NOTE: rowMeans of all NA is NaN, so some cells of this k2ps matrix may be NaNs
         k2ps <- do.call(
             cbind,
             lapply(
                 k2is,
                 function(is)
-                    rowMeans(Xi[, is], na.rm = TRUE)
+                    rowMeans(Xi[, is, drop = FALSE], na.rm = TRUE)
             )
         ) / 2
         
         # count number of non-NA individuals per SNP per pop k (then turn to allele counts with 2x-1)
+        # NOTE: nothing here is NA, but there can be zeroes in the inner calls so the k2n matrix may have -1 cases
         k2n <- 2 * do.call(
                        cbind,
                        lapply(
                            k2is,
                            function(is)
-                               rowSums( !is.na(Xi[, is]), na.rm = TRUE )
+                               rowSums( !is.na(Xi[, is, drop = FALSE]), na.rm = TRUE )
                        )
                    ) - 1
 
         # estimate ancestral allele frequencies across the matrix
         # in WC, this is sample mean of each row of X, but in Hudson it is the sample mean of per-pop freqs
-        p_anc_hat <- rowMeans( k2ps )
+        # NOTE: this one cannot be NA (at least one element in k2ps is non-NA)
+        p_anc_hat <- rowMeans( k2ps, na.rm = TRUE )
 
         # a vector of estimated variances
         # this terms appears in the top and bottom
-        s2s <- rowSums( ( k2ps - p_anc_hat )^2 ) / (r-1)
+        # NOTE: this is never NA (at least one summand is non-NA)
+        # however, NA cells will be incorrectly "averaged"
+        s2s <- rowSums( ( k2ps - p_anc_hat )^2, na.rm = TRUE ) / (r-1)
         
         # compute Fst parts (tops and bottoms) for each locus using this method
+        # NOTE: overall nothing here should be NA
         # bottom
         FstBsi <- p_anc_hat * ( 1 - p_anc_hat ) + s2s / r
         # top
-        FstTsi <- s2s - rowMeans( k2ps * ( 1 - k2ps ) / k2n )
-
+        # NOTE: some k2ps cells can be NA, same ones where k2n is -1, so ignoring them as below works out
+        FstTsi <- s2s - rowMeans( k2ps * ( 1 - k2ps ) / k2n, na.rm = TRUE )
+        
         # copy chunk data to global vectors (containing all chunks)
         FstTs[ indexes_loci_chunk ] <- FstTsi
         FstBs[ indexes_loci_chunk ] <- FstBsi
-
+        
         # update starting point for next chunk! (overshoots at the end, that's ok)
         i_chunk <- i_chunk + m_chunk
     }

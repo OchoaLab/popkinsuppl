@@ -6,6 +6,7 @@
 #'
 #' @param X The genotype matrix (BEDMatrix, regular R matrix, or function, same as `popkin`).
 #' @param labs A vector of subpopulation assignments for every individual.
+#' At least two subpoplations must be present.
 #' @param m The number of loci, required if `X` is a function (ignored otherwise).
 #' In particular, `m` is obtained from `X` when it is a BEDMatrix or a regular R matrix.
 #' @param ind_keep An optional vector of individuals to keep (as booleans or indexes, used to subset an R matrix).
@@ -93,9 +94,12 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
     # general label processing to simplfy things
     out <- clean_labs(labs)
     k2is <- out$k2is
-    k2n <- out$k2n
+    k2n <- 2 * out$k2n # counts of alleles, or double the number of individuals!
     r <- length(k2n)
     
+    if (r < 2)
+        stop('There must be two or more subpopulations!')
+
     # now compute these WC-specific things
     nbar <- mean(k2n)
     
@@ -173,25 +177,35 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
             }
         }
         
+        # NOTE: in the other notes below I assume there aren't rows that are entirely NA
+        # rowSums of all NAs is 0 (with na.rm = TRUE)
+        # rowMeans of all NA is NaN (with na.rm = TRUE)
+
         # estimate ancestral allele frequencies across the matrix
+        # NOTE: never NA (at least one genotype not NA per row)
         p_anc_hat <- rowMeans(Xi, na.rm = TRUE) / 2
         
         # this is a matrix that contains within-population allele frequencies
+        # NOTE: rowMeans of all NA is NaN, so some cells of this k2ps matrix may be NaNs
         k2ps <- do.call(
             cbind,
             lapply(
                 k2is,
                 function(is)
-                    rowMeans(Xi[, is], na.rm = TRUE)
+                    rowMeans(Xi[, is, drop = FALSE], na.rm = TRUE)
             )
         ) / 2
         # a vector of estimated variances
-        s2s <- drop( ( k2ps - p_anc_hat )^2 %*% k2n ) / ( nbar * ( r - 1 ) )
+        #s2s <- drop( ( k2ps - p_anc_hat )^2 %*% k2n ) / ( nbar * ( r - 1 ) ) # OLD, not NA-robust
+        # NOTE: this does not result in NAs
+        s2s <- rowSums( ( k2ps - p_anc_hat )^2 * k2n, na.rm = TRUE ) / ( nbar * ( r - 1 ) )
         # and the p * (1-p) estimate
+        # NOTE: never NA
         p_q_hat <- p_anc_hat * ( 1 - p_anc_hat )
         
         # compute Fst parts (tops and bottoms) for each locus using this method
         # keeping them separate facilitates bootstrapping, which we'll attempt at some point
+        # NOTE: never NA
         hbars <- rowMeans(Xi == 1, na.rm = TRUE)
 
         # top
