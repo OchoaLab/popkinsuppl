@@ -1,6 +1,6 @@
 Package: popkinsuppl
 Title: Supplement to popkin package
-Version: 1.0.8.9000
+Version: 1.0.9.9000
 Authors@R: c(
     person(given = "Alejandro",
 	   family = "Ochoa",
@@ -13,7 +13,7 @@ Authors@R: c(
 	   email = "jstorey@princeton.edu",
            comment = c(ORCID = "0000-0001-5992-402X"))
     )
-Description: Provides custom implementations of existing statistical genetics estimators, designed to work on extremely large files and handle missing data.  Includes the Standard Kinship estimator (mean-of-ratios and ratio-of-means versions), and the Weir-Cockerham, Weir-Hill, and Generalized "Hudson" FST estimators.
+Description: Provides custom implementations of existing statistical genetics estimators, designed to work on extremely large files and handle missing data.  Includes the Standard Kinship estimator (mean-of-ratios and ratio-of-means versions), and the Weir-Cockerham, Weir-Hill, Hudson pairwise, and Generalized "Hudson" FST estimators.
 Imports:
     popkin (>= 1.2.6.9000)
 License: GPL-3

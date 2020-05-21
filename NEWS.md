@@ -44,3 +44,11 @@
   * Works correctly when there are singleton subpopulations (used to cause errors)
   * More clear error messages for fewer than two subpopulations
   * Expanded tests to cover these scenarios
+
+# 2020-05-21 - popkinsuppl 1.0.9.9000
+
+* Reimplemented `fst_hudson_pairwise` to make it much more efficient in large datasets
+  * Original implementation simply called `fst_hudson_k` separately for every pair of subpopulations, which caused excessive and non-optimal file reading, which scaled increasingly poorly as the number of subpopulations increased.
+  * New implementation directly constructs pairwise FST matrix, reading input genotype matrix only once.
+  * The new implementation also better handles missing genotypes and is more numerically stable than before.
+  * In the public Pacific dataset (Skoglund et al. 2016) it was verified to agree with the Hudson implementation in `EIGENSUITE` 7.2.1 (executable `smartpca`)

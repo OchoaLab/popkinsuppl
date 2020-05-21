@@ -33,7 +33,7 @@ m_loci <- nrow( X )
 
 # create subpopulation labels
 # k_subpops groups of equal size
-labs <- ceiling( (1 : n_ind) / k_subpops )
+labs <- ceiling( (1 : n_ind) / n_ind * k_subpops )
 
 # create a more difficult case where there are lots of small subpopulations
 # here each subpopulation nas one individual only, creating lots of subpops with NAs
@@ -251,6 +251,8 @@ test_that("fst_hudson_k works singleton subpops", {
 test_that("fst_hudson_pairwise works", {
     # estimated pairwise FST matrix using the "Hudson" formula
     fst_hudson_matrix <- fst_hudson_pairwise(X, labs)
+    # compare to an older version that's also been validated, and which relies on fst_hudson_k internally so it's extra validated since fst_hudson_k was tested above
+    fst_hudson_matrix_hack <- fst_hudson_pairwise_hack(X, labs)
     
     expect_true( is.numeric(fst_hudson_matrix) )
 
@@ -264,6 +266,9 @@ test_that("fst_hudson_pairwise works", {
 
     # diagonal must be zero
     expect_equal( range(diag(fst_hudson_matrix)), c(0, 0) )
+
+    # compare to slower version
+    expect_equal( fst_hudson_matrix, fst_hudson_matrix_hack )
 })
 
 test_that("fst_hudson_pairwise works singleton subpops", {

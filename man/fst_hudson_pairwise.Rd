@@ -4,7 +4,15 @@
 \alias{fst_hudson_pairwise}
 \title{Matrix of between-subpopulation Hudson FST estimates}
 \usage{
-fst_hudson_pairwise(X, labs, pops = NULL)
+fst_hudson_pairwise(
+  X,
+  labs,
+  pops = NULL,
+  m = NA,
+  loci_on_cols = FALSE,
+  mem_factor = 0.7,
+  mem_lim = NA
+)
 }
 \arguments{
 \item{X}{The genotype matrix (BEDMatrix, regular R matrix, or function, same as \code{popkin}).}
@@ -13,6 +21,19 @@ fst_hudson_pairwise(X, labs, pops = NULL)
 
 \item{pops}{An optional vector of unique subpopulation labels, in the desired order for the matrix.
 By default the unique labels in \code{labs} sorted alphabetically are used.}
+
+\item{m}{The number of loci, required if \code{X} is a function (ignored otherwise).
+In particular, \code{m} is obtained from \code{X} when it is a BEDMatrix or a regular R matrix.}
+
+\item{loci_on_cols}{Determines the orientation of the genotype matrix (by default, \code{FALSE}, loci are along the rows).
+Set automatically to \code{TRUE} if \code{X} is a BEDMatrix object.}
+
+\item{mem_factor}{Proportion of available memory to use loading and processing genotypes.
+Ignored if \code{mem_lim} is not \code{NA}.}
+
+\item{mem_lim}{Memory limit in GB, used to break up genotype data into chunks for very large datasets.
+Note memory usage is somewhat underestimated and is not controlled strictly.
+Default in Linux and Windows is \code{mem_factor} times the free system memory, otherwise it is 1GB (OSX and other systems).}
 }
 \value{
 A symmetric matrix of FST estimates between every pair of subpopulations.
