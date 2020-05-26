@@ -98,37 +98,37 @@ test_that("fst_wc works", {
     expect_true( !anyNA( obj$data ) )
 })
 
-test_that("fst_wc works singleton subpops", {
-    # estimate FST using the Weir-Cockerham formula
-    obj <- fst_wc(X, labs1)
-
-    # test overall object
-    expect_true( is.list(obj) )
-    expect_equal( length(obj), 4 )
-    expect_equal( names(obj), c('fst', 'fst_loci', 'data', 'maf') )
-    
-    # the genome-wide FST estimate
-    expect_true( is.numeric(obj$fst) )
-    expect_equal( length(obj$fst), 1 )
-    expect_true( !is.na(obj$fst) )
-    
-    # vector of per-locus FST estimates
-    expect_true( is.numeric(obj$fst_loci) )
-    expect_equal( length(obj$fst_loci), m_loci )
-    expect_true( !anyNA( obj$fst_loci ) )
-    
-    # vector of MAFs
-    expect_true( is.numeric(obj$maf) )
-    expect_equal( length(obj$maf), m_loci )
-    expect_true( !anyNA( obj$maf ) )
-
-    # FST data matrix
-    expect_true( is.numeric(obj$data) )
-    expect_true( is.matrix(obj$data) )
-    expect_equal( nrow(obj$data), m_loci )
-    expect_equal( ncol(obj$data), 2 )
-    expect_true( !anyNA( obj$data ) )
-})
+## test_that("fst_wc works singleton subpops", {
+##     # estimate FST using the Weir-Cockerham formula
+##     obj <- fst_wc(X, labs1)
+##
+##     # test overall object
+##     expect_true( is.list(obj) )
+##     expect_equal( length(obj), 4 )
+##     expect_equal( names(obj), c('fst', 'fst_loci', 'data', 'maf') )
+##    
+##     # the genome-wide FST estimate
+##     expect_true( is.numeric(obj$fst) )
+##     expect_equal( length(obj$fst), 1 )
+##     expect_true( !is.na(obj$fst) )
+##    
+##     # vector of per-locus FST estimates
+##     expect_true( is.numeric(obj$fst_loci) )
+##     expect_equal( length(obj$fst_loci), m_loci )
+##     expect_true( !anyNA( obj$fst_loci ) )
+##    
+##     # vector of MAFs
+##     expect_true( is.numeric(obj$maf) )
+##     expect_equal( length(obj$maf), m_loci )
+##     expect_true( !anyNA( obj$maf ) )
+##
+##     # FST data matrix
+##     expect_true( is.numeric(obj$data) )
+##     expect_true( is.matrix(obj$data) )
+##     expect_equal( nrow(obj$data), m_loci )
+##     expect_equal( ncol(obj$data), 2 )
+##     expect_true( !anyNA( obj$data ) )
+## })
 
 test_that("fst_wh works", {
     # estimate FST using the Weir-Hill formula

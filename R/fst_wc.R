@@ -94,7 +94,7 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
     # general label processing to simplfy things
     out <- clean_labs(labs)
     k2is <- out$k2is
-    k2n <- 2 * out$k2n # counts of alleles, or double the number of individuals!
+    k2n <- out$k2n # use number of individuals
     r <- length(k2n)
     
     if (r < 2)
@@ -221,7 +221,7 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
             1 + (r-1) * nbar * c2 / r / ( nbar - 1 )
         ) * s2s / r +
         c2 * hbars / ( r * ( nbar - 1 ) * 4 )
-        
+
         # copy chunk data to global vectors (containing all chunks)
         FstTs[ indexes_loci_chunk ] <- FstTsi
         FstBs[ indexes_loci_chunk ] <- FstBsi

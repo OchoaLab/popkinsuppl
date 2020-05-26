@@ -52,3 +52,7 @@
   * New implementation directly constructs pairwise FST matrix, reading input genotype matrix only once.
   * The new implementation also better handles missing genotypes and is more numerically stable than before.
   * In the public Pacific dataset (Skoglund et al. 2016) it was verified to agree with the Hudson implementation in `EIGENSUITE` 7.2.1 (executable `smartpca`)
+
+# 2020-05-25 - popkinsuppl 1.0.10.9000
+
+* Reverted `fst_wc` sample size formula to what it was prior to version 1.0.8.9000.  Bias tests showed that the original sample size equation was best.
