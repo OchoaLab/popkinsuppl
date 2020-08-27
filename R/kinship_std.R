@@ -11,7 +11,7 @@
 #' If `FALSE` (default) the ratio-of-means version is computed, which behaves more favorably and has a known asymptotic bias.
 #' If `TRUE`, the mean-of-ratios version is computed, which is more variable and has an uncharacterized bias, but is most common in the literature.
 #' @param loci_on_cols Determines the orientation of the genotype matrix (by default, `FALSE`, loci are along the rows).
-#' Set automatically to `TRUE` if `X` is a BEDMatrix object.
+#' If `X` is a BEDMatrix object, the input value is ignored (set automatically to `TRUE` internally).
 #' @param mem_factor Proportion of available memory to use loading and processing genotypes.
 #' Ignored if `mem_lim` is not `NA`.
 #' @param mem_lim Memory limit in GB, used to break up genotype data into chunks for very large datasets.

@@ -26,7 +26,7 @@ In particular, \code{m} is obtained from \code{X} when it is a BEDMatrix or a re
 \item{ind_keep}{An optional vector of individuals to keep (as booleans or indexes, used to subset an R matrix).}
 
 \item{loci_on_cols}{Determines the orientation of the genotype matrix (by default, \code{FALSE}, loci are along the rows).
-Set automatically to \code{TRUE} if \code{X} is a BEDMatrix object.}
+If \code{X} is a BEDMatrix object, the input value is ignored (set automatically to \code{TRUE} internally).}
 
 \item{mem_factor}{Proportion of available memory to use loading and processing genotypes.
 Ignored if \code{mem_lim} is not \code{NA}.}

@@ -11,7 +11,7 @@
 #' In particular, `m` is obtained from `X` when it is a BEDMatrix or a regular R matrix.
 #' @param ind_keep An optional vector of individuals to keep (as booleans or indexes, used to subset an R matrix).
 #' @param loci_on_cols Determines the orientation of the genotype matrix (by default, `FALSE`, loci are along the rows).
-#' Set automatically to `TRUE` if `X` is a BEDMatrix object.
+#' If `X` is a BEDMatrix object, the input value is ignored (set automatically to `TRUE` internally).
 #' @param mem_factor Proportion of available memory to use loading and processing genotypes.
 #' Ignored if `mem_lim` is not `NA`.
 #' @param mem_lim Memory limit in GB, used to break up genotype data into chunks for very large datasets.

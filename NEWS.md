@@ -56,3 +56,7 @@
 # 2020-05-25 - popkinsuppl 1.0.10.9000
 
 * Reverted `fst_wc` sample size formula to what it was prior to version 1.0.8.9000.  Bias tests showed that the original sample size equation was best.
+
+# 2020-08-27 - popkinsuppl 1.0.11.9000
+
+* Function `fst_wc` has new option `FIT`, which if `TRUE` additionally includes calculations of the *total inbreeding* (FIT) next to the default *structural inbreeding* (FST) output list.

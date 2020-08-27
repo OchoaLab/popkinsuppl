@@ -1,17 +1,18 @@
-#' The Weir-Cockerham FST estimator
+#' The Weir-Cockerham FST and FIT estimator
 #'
-#' This function implements the full FST estimator from Weir and Cockerham (1984).
+#' This function implements the full FST and FIT estimators from Weir and Cockerham (1984).
 #' Handles very large data, passed as BEDMatrix or as a regular R matrix.
 #' Handles missing values correctly.
 #'
 #' @param X The genotype matrix (BEDMatrix, regular R matrix, or function, same as `popkin`).
 #' @param labs A vector of subpopulation assignments for every individual.
 #' At least two subpoplations must be present.
+#' @param FIT If `FALSE` (default) computes FST only, otherwise computes both FIT and FST.
 #' @param m The number of loci, required if `X` is a function (ignored otherwise).
 #' In particular, `m` is obtained from `X` when it is a BEDMatrix or a regular R matrix.
 #' @param ind_keep An optional vector of individuals to keep (as booleans or indexes, used to subset an R matrix).
 #' @param loci_on_cols Determines the orientation of the genotype matrix (by default, `FALSE`, loci are along the rows).
-#' Set automatically to `TRUE` if `X` is a BEDMatrix object.
+#' If `X` is a BEDMatrix object, the input value is ignored (set automatically to `TRUE` internally).
 #' @param mem_factor Proportion of available memory to use loading and processing genotypes.
 #' Ignored if `mem_lim` is not `NA`.
 #' @param mem_lim Memory limit in GB, used to break up genotype data into chunks for very large datasets.
@@ -20,12 +21,14 @@
 #'
 #' @return A list with the following named elements, in this order:
 #' 
-#' - fst: The genome-wide Fst estimate (scalar).
-#' - fst_loci: A vector of per-locus Fst estimates.
-#' - data: a 2-by-m matrix of statistics used in estimating Fst.
+#' - `fst`: The genome-wide Fst estimate (scalar).
+#' - `fst_loci`: A vector of per-locus Fst estimates.
+#' - `data`: a 2-by-m matrix of per-locus numerator and denominator Fst estimates.
 #'   Useful to obtain a bootstrap distribution for the genome-wide Fst.
-#' - maf: a vector of marginal allele frequency estimates, one for each locus.
+#' - `maf`: a vector of marginal allele frequency estimates, one for each locus.
 #'   Note that it has not been converted to *minor* allele frequencies.
+#'
+#' If `FIT = TRUE`, two additional elements, `fit` and `fit_loci` are appended to the list, and `data` becomes a 3-by-m matrix, where the third column is the per-locus numerators of the Fit estimates (the denominators are the same for Fit and Fst).
 #'
 #' @examples
 #' # dimensions of simulated data
@@ -64,11 +67,22 @@
 #' # vector of per-locus FST estimates
 #' fst_wc_obj$fst_loci
 #' 
+#' # estimate FST and FIT using the Weir-Cockerham formula
+#' # (normally FIT estimates are not calculated,
+#' # this adds them to return object)
+#' fst_wc_obj <- fst_wc(X, labs, FIT = TRUE)
+#' 
+#' # the genome-wide FIT estimate
+#' fst_wc_obj$fit
+#' 
+#' # vector of per-locus FIT estimates
+#' fst_wc_obj$fit_loci
+#' 
 #' @seealso
 #' The popkin package.
 #'
 #' @export
-fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_factor = 0.7, mem_lim = NA) {
+fst_wc <- function(X, labs, FIT = FALSE, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_factor = 0.7, mem_lim = NA) {
     if (missing(X))
         stop('Genotype matrix `X` is required!')
     if (missing(labs))
@@ -91,7 +105,7 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
     
     # global computations shared by all chunks
     
-    # general label processing to simplfy things
+    # general label processing to simplify things
     out <- clean_labs(labs)
     k2is <- out$k2is
     k2n <- out$k2n # use number of individuals
@@ -111,6 +125,9 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
     FstTs <- vector('numeric', m)
     FstBs <- vector('numeric', m)
     mafs <- vector('numeric', m)
+    # one more vector to compute
+    if ( FIT )
+        FitTs <- vector('numeric', m)
     
     # estimating total memory usage in bytes
     # Pi = m*8+ao
@@ -123,6 +140,7 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
     # hbars = m*8+ao
     # FstTsi = m*8+ao
     # FstBsi = m*8+ao
+    # FitTsi = m*8+ao # only if FIT is TRUE
 
     # the general function doesn't have an "r" input, but since "n" only enters in m*n matrices and so does "r", we can hack it all to have an effective "n" that combines both
     # Have:
@@ -130,13 +148,14 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
     # - 2 m*r
     # since there's no other n's this is equivalent to
     # n = 1.5 * n + 2 * r
+    # new: alternatively, to be more conservative, we can set n properly, and pretend r is like n, so there are 3.5n in that case, and again to be even more conservative we turn than into a 4 below
     
     # calculate chunk size given available memory
     data <- popkin:::solve_m_mem_lim(
-                         n = 1.5 * n + 2 * r,
+                         n = n, # 1.5 * n + 2 * r,
                          m = m,
-                         mat_m_n = 1, # left simple to not confound with above `n` hack
-                         vec_m = 6,
+                         mat_m_n = 4, # 1, # left simple to not confound with above `n` hack
+                         vec_m = 6 + FIT, # only part that changes if FIT is TRUE (TRUE = 1, FALSE = 0)
                          mem = mem_lim,
                          mem_factor = mem_factor
                      )
@@ -222,10 +241,19 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
         ) * s2s / r +
         c2 * hbars / ( r * ( nbar - 1 ) * 4 )
 
+        if ( FIT ) {
+            # produce this other calculation
+            # note denominator is shared with FST
+            # here we account for the (1 - x) form in the paper
+            FitTsi <- FstBsi - ( 1 - c2/r ) * hbars / 2
+        }
+
         # copy chunk data to global vectors (containing all chunks)
         FstTs[ indexes_loci_chunk ] <- FstTsi
         FstBs[ indexes_loci_chunk ] <- FstBsi
         mafs[ indexes_loci_chunk ] <- p_anc_hat
+        if ( FIT )
+            FitTs[ indexes_loci_chunk ] <- FitTsi
         
         # update starting point for next chunk! (overshoots at the end, that's ok)
         i_chunk <- i_chunk + m_chunk
@@ -233,18 +261,32 @@ fst_wc <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
 
     # compute global mean Fst! (the non-bootstrap final estimate across SNPs)
     fst <- sum(FstTs) / sum(FstBs)
-
+    if ( FIT )
+        fit <- sum(FitTs) / sum(FstBs)
+    
     # also compute vector of per-locus Fst values
     fst_loci <- FstTs / FstBs
-    
-    # return an object with the mean and the raw data for bootstrapping (matrix of Fst parts: top and bottom, separating each SNP)
-    return(
-        list(
-            fst = fst,
-            fst_loci = fst_loci,
-            data = cbind(FstTs, FstBs),
-            maf = mafs
-        )
+    if ( FIT )
+        fit_loci <- FitTs / FstBs
+
+    # the raw data for bootstrapping (matrix of Fst parts: top and bottom, separating each SNP)
+    data <- cbind( FstTs, FstBs )
+    # add Fit top to last column, if computed
+    if ( FIT )
+        data <- cbind( data, FitTs )
+
+    # return an object with all desired info
+    obj <- list(
+        fst = fst,
+        fst_loci = fst_loci,
+        data = data,
+        maf = mafs
     )
+    # add FIT data if needed
+    if ( FIT ) {
+        obj$fit <- fit
+        obj$fit_loci <- fit_loci
+    }    
+    return( obj )
 }
 

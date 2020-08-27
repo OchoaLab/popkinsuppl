@@ -2,11 +2,12 @@
 % Please edit documentation in R/fst_wc.R
 \name{fst_wc}
 \alias{fst_wc}
-\title{The Weir-Cockerham FST estimator}
+\title{The Weir-Cockerham FST and FIT estimator}
 \usage{
 fst_wc(
   X,
   labs,
+  FIT = FALSE,
   m = NA,
   ind_keep = NULL,
   loci_on_cols = FALSE,
@@ -20,13 +21,15 @@ fst_wc(
 \item{labs}{A vector of subpopulation assignments for every individual.
 At least two subpoplations must be present.}
 
+\item{FIT}{If \code{FALSE} (default) computes FST only, otherwise computes both FIT and FST.}
+
 \item{m}{The number of loci, required if \code{X} is a function (ignored otherwise).
 In particular, \code{m} is obtained from \code{X} when it is a BEDMatrix or a regular R matrix.}
 
 \item{ind_keep}{An optional vector of individuals to keep (as booleans or indexes, used to subset an R matrix).}
 
 \item{loci_on_cols}{Determines the orientation of the genotype matrix (by default, \code{FALSE}, loci are along the rows).
-Set automatically to \code{TRUE} if \code{X} is a BEDMatrix object.}
+If \code{X} is a BEDMatrix object, the input value is ignored (set automatically to \code{TRUE} internally).}
 
 \item{mem_factor}{Proportion of available memory to use loading and processing genotypes.
 Ignored if \code{mem_lim} is not \code{NA}.}
@@ -38,16 +41,18 @@ Default in Linux and Windows is \code{mem_factor} times the free system memory, 
 \value{
 A list with the following named elements, in this order:
 \itemize{
-\item fst: The genome-wide Fst estimate (scalar).
-\item fst_loci: A vector of per-locus Fst estimates.
-\item data: a 2-by-m matrix of statistics used in estimating Fst.
+\item \code{fst}: The genome-wide Fst estimate (scalar).
+\item \code{fst_loci}: A vector of per-locus Fst estimates.
+\item \code{data}: a 2-by-m matrix of per-locus numerator and denominator Fst estimates.
 Useful to obtain a bootstrap distribution for the genome-wide Fst.
-\item maf: a vector of marginal allele frequency estimates, one for each locus.
+\item \code{maf}: a vector of marginal allele frequency estimates, one for each locus.
 Note that it has not been converted to \emph{minor} allele frequencies.
 }
+
+If \code{FIT = TRUE}, two additional elements, \code{fit} and \code{fit_loci} are appended to the list, and \code{data} becomes a 3-by-m matrix, where the third column is the per-locus numerators of the Fit estimates (the denominators are the same for Fit and Fst).
 }
 \description{
-This function implements the full FST estimator from Weir and Cockerham (1984).
+This function implements the full FST and FIT estimators from Weir and Cockerham (1984).
 Handles very large data, passed as BEDMatrix or as a regular R matrix.
 Handles missing values correctly.
 }
@@ -87,6 +92,17 @@ fst_wc_obj$fst
 
 # vector of per-locus FST estimates
 fst_wc_obj$fst_loci
+
+# estimate FST and FIT using the Weir-Cockerham formula
+# (normally FIT estimates are not calculated,
+# this adds them to return object)
+fst_wc_obj <- fst_wc(X, labs, FIT = TRUE)
+
+# the genome-wide FIT estimate
+fst_wc_obj$fit
+
+# vector of per-locus FIT estimates
+fst_wc_obj$fit_loci
 
 }
 \seealso{

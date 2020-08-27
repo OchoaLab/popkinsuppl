@@ -98,6 +98,46 @@ test_that("fst_wc works", {
     expect_true( !anyNA( obj$data ) )
 })
 
+test_that("fst_wc with `FIT = TRUE` works", {
+    # estimate FST using the Weir-Cockerham formula
+    obj <- fst_wc(X, labs, FIT = TRUE)
+
+    # test overall object
+    expect_true( is.list(obj) )
+    expect_equal( length(obj), 6 )
+    expect_equal( names(obj), c('fst', 'fst_loci', 'data', 'maf', 'fit', 'fit_loci') )
+    
+    # the genome-wide FST estimate
+    expect_true( is.numeric(obj$fst) )
+    expect_equal( length(obj$fst), 1 )
+    expect_true( !is.na(obj$fst) )
+    # ditto FIT
+    expect_true( is.numeric(obj$fit) )
+    expect_equal( length(obj$fit), 1 )
+    expect_true( !is.na(obj$fit) )
+    
+    # vector of per-locus FST estimates
+    expect_true( is.numeric(obj$fst_loci) )
+    expect_equal( length(obj$fst_loci), m_loci )
+    expect_true( !anyNA( obj$fst_loci ) )
+    # ditto FIT
+    expect_true( is.numeric(obj$fit_loci) )
+    expect_equal( length(obj$fit_loci), m_loci )
+    expect_true( !anyNA( obj$fit_loci ) )
+    
+    # vector of MAFs
+    expect_true( is.numeric(obj$maf) )
+    expect_equal( length(obj$maf), m_loci )
+    expect_true( !anyNA( obj$maf ) )
+
+    # FST data matrix
+    expect_true( is.numeric(obj$data) )
+    expect_true( is.matrix(obj$data) )
+    expect_equal( nrow(obj$data), m_loci )
+    expect_equal( ncol(obj$data), 3 ) # this version has 3 columns!
+    expect_true( !anyNA( obj$data ) )
+})
+
 ## test_that("fst_wc works singleton subpops", {
 ##     # estimate FST using the Weir-Cockerham formula
 ##     obj <- fst_wc(X, labs1)
