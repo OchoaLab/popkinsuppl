@@ -60,3 +60,9 @@
 # 2020-08-27 - popkinsuppl 1.0.11.9000
 
 * Function `fst_wc` has new option `FIT`, which if `TRUE` additionally includes calculations of the *total inbreeding* (FIT) next to the default *structural inbreeding* (FST) output list.
+
+# 2020-08-30 - popkinsuppl 1.0.12.9000
+
+* Debugged functions `fst_wc` and `fst_wh`, which previously propagated some matrix-vector products incorrectly.
+  This bug resulted in small biases when subpopulation sample sizes were unequal (sample weighing was set incorrectly; there was no bug when all sample sizes were equal).
+  The bug was introduced in version 1.0.8.9000 (commit b445e3e) and remained until this version.

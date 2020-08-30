@@ -217,7 +217,16 @@ fst_wc <- function(X, labs, FIT = FALSE, m = NA, ind_keep = NULL, loci_on_cols =
         # a vector of estimated variances
         #s2s <- drop( ( k2ps - p_anc_hat )^2 %*% k2n ) / ( nbar * ( r - 1 ) ) # OLD, not NA-robust
         # NOTE: this does not result in NAs
-        s2s <- rowSums( ( k2ps - p_anc_hat )^2 * k2n, na.rm = TRUE ) / ( nbar * ( r - 1 ) )
+        # use sweep to multiply k2n across the rows of `( k2ps - p_anc_hat )^2` (instead of the default per-column multiplication of the ordinary product `*`)
+        s2s <- rowSums(
+            sweep(
+                ( k2ps - p_anc_hat )^2,
+                MARGIN = 2,
+                k2n,
+                `*`
+            ),
+            na.rm = TRUE
+        ) / ( nbar * ( r - 1 ) )
         # and the p * (1-p) estimate
         # NOTE: never NA
         p_q_hat <- p_anc_hat * ( 1 - p_anc_hat )

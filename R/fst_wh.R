@@ -203,7 +203,15 @@ fst_wh <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
         # a vector of estimated variances
         # s2s <- drop( ( k2ps - p_anc_hat )^2 %*% k2ndnc ) # OLD, not NA-robust
         # NOTE: this does not result in NAs
-        s2s <- rowSums( ( k2ps - p_anc_hat )^2 * k2ndnc, na.rm = TRUE )
+        s2s <- rowSums(
+            sweep(
+                ( k2ps - p_anc_hat )^2,
+                MARGIN = 2,
+                k2ndnc,
+                `*`
+            ),
+            na.rm = TRUE
+        )
         # and the p * (1-p) estimates per subpopulation (r by m matrix)
         # some of these may be NaNs
         p_q_hats <- k2ps * ( 1 - k2ps )
@@ -212,10 +220,26 @@ fst_wh <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_f
         # NOTE: this does not result in NAs
         # top
         #FstTsi <- s2s + drop( p_q_hats %*% k2wcu ) # OLD, not NA-robust
-        FstTsi <- s2s + rowSums( p_q_hats * k2wcu, na.rm = TRUE )
+        FstTsi <- s2s + rowSums(
+                            sweep(
+                                p_q_hats,
+                                MARGIN = 2,
+                                k2wcu,
+                                `*`
+                            ),
+                            na.rm = TRUE
+                        )
         # bottom
         #FstBsi <- s2s + drop( p_q_hats %*% k2wc ) # OLD, not NA-robust
-        FstBsi <- s2s + rowSums( p_q_hats * k2wc, na.rm = TRUE )
+        FstBsi <- s2s + rowSums(
+                            sweep(
+                                p_q_hats,
+                                MARGIN = 2,
+                                k2wc,
+                                `*`
+                            ),
+                            na.rm = TRUE
+                        )
         
         # copy chunk data to global vectors (containing all chunks)
         FstTs[ indexes_loci_chunk ] <- FstTsi
