@@ -17,9 +17,15 @@
 #' @param mem_lim Memory limit in GB, used to break up genotype data into chunks for very large datasets.
 #' Note memory usage is somewhat underestimated and is not controlled strictly.
 #' Default in Linux and Windows is `mem_factor` times the free system memory, otherwise it is 1GB (OSX and other systems).
+#' @param want_M If `TRUE`, includes the matrix `M` of non-missing pair counts in the return value, which are sample sizes that can be useful in modeling the variance of estimates.
+#' Default `FALSE` is to return the kinship matrix only.
 #'
-#' @return The estimated kinship matrix.
-#' If \eqn{X} has names for the individuals, they will be copied to the rows and columns of this kinship matrix.
+#' @return If `want_M` is `FALSE`, returns the estimated `n`-by-`n` kinship matrix only.
+#' If `X` has names for the individuals, they will be copied to the rows and columns of this kinship matrix.
+#' If `want_M` is `TRUE`, a named list is returned, containing:
+#'
+#' - `kinship`: the estimated `n`-by-`n` kinship matrix
+#' - `M`: the `n`-by-`n` matrix of non-missing pair counts (see `want_M` option).
 #'
 #' @examples
 #' # dimensions of simulated data
@@ -54,9 +60,19 @@
 #' The popkin package.
 #'
 #' @export
-kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE, mem_factor = 0.7, mem_lim = NA) {
+kinship_std <- function(
+                        X,
+                        n = NA,
+                        mean_of_ratios = FALSE,
+                        loci_on_cols = FALSE,
+                        mem_factor = 0.7,
+                        mem_lim = NA,
+                        want_M = FALSE
+                        ) {
+    if ( missing( X ) )
+        stop( 'Genotype matrix `X` is required!' )
+    
     # SUPER low-mem version that processes input as it is read
-    # NOTE: below I kept "A" notation, but this is kinship_std
     
     # determine some behaviors depending on data type
     # first validate class and set key booleans
@@ -98,7 +114,7 @@ kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE,
     } 
     
     # estimating total memory usage in bytes
-    # A = n*n*8+mo
+    # kinship = n*n*8+mo
     # M = n*n*8+mo
     # Xi = m*n*4+mo # initial int version
     # Pi = m*8+ao
@@ -107,7 +123,7 @@ kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE,
     # !is.na(Xi) = m*n*8+mo # gets turned into double when input to tcrossprod
     # M = n*n*8+mo # introduce again as we update it in addition
     # Xi = m*n*8+mo # ignore (NEWEST) or introduce again as it is updated (replacing NAs with zeroes; OLD)
-    # A = n*n*8+mo # introduce again as we update it in addition
+    # kinship = n*n*8+mo # introduce again as we update it in addition
     # Pi*(1-Pi) = 2*(m*8+ao) # two temporary arrays in computing this
     
     data <- popkin:::solve_m_mem_lim(
@@ -122,17 +138,17 @@ kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE,
     m_chunk <- data$m_chunk
     
     # initialize desired matrix
-    A <- matrix(0, nrow = n, ncol = n)
+    kinship <- matrix(0, nrow = n, ncol = n)
     M <- matrix(0, nrow = n, ncol = n) # normalization now varies per individual pair
     nu <- 0 # scalar normalization = mean p(1-p)
     m_nu <- 0 # to average nu (almost equal to m, but must remove completely fixed loci)
     
-    # transfer names from X to A if present
+    # transfer names from X to kinship if present
     # this will carry over all the way to the final kinship matrix!
     # (M need not have names at all)
     if (!is.null(names_X)) {
-        colnames(A) <- names_X
-        rownames(A) <- names_X
+        colnames(kinship) <- names_X
+        rownames(kinship) <- names_X
     }
     
     # navigate chunks
@@ -202,17 +218,27 @@ kinship_std <- function(X, n = NA, mean_of_ratios = FALSE, loci_on_cols = FALSE,
         }
 
         # cross product matrix at this SNP, add to running sum.  We'll add an extra -1 later... (this is computationally faster and maybe even more numerically stable)
-        A <- A + crossprod(Xi)
+        kinship <- kinship + crossprod(Xi)
         # NOTE: M and m count the same loci (including fixed loci in this case; as long as there's consistency the difference just cancels out as expected)
     }
     
     # normalize estimate!
     if (mean_of_ratios) {
-        A <- A / M / 4 # just need per-pair average norm
+        kinship <- kinship / M / 4 # just need per-pair average norm
     } else { 
-        A <- A / M / ( 4 * nu / m_nu ) # turn into ratio of averages, return!
+        kinship <- kinship / M / ( 4 * nu / m_nu ) # turn into ratio of averages, return!
     }
     
-    return(A)
+    # figure out what to return
+    if ( want_M ) {
+        return(
+            list(
+                kinship = kinship,
+                M = M
+            )
+        )
+    } else {
+        return( kinship )
+    }
 }
 

@@ -51,6 +51,28 @@ test_that("kinship_std ROM works", {
     expect_true( is.matrix(kinship) )
     expect_equal( nrow(kinship), n_ind)
     expect_equal( ncol(kinship), n_ind)
+
+    # repeat with want_M == TRUE
+    obj <- kinship_std( X, want_M = TRUE )
+    kinship <- obj$kinship
+    M <- obj$M
+
+    expect_true( is.numeric(kinship) )
+    expect_true( !anyNA(kinship) )
+    expect_true( is.numeric(M) )
+    expect_true( !anyNA(M) )
+    
+    # test dimensions
+    expect_true( is.matrix(kinship) )
+    expect_equal( nrow(kinship), n_ind )
+    expect_equal( ncol(kinship), n_ind )
+    expect_true( is.matrix(M) )
+    expect_equal( nrow(M), n_ind )
+    expect_equal( ncol(M), n_ind )
+    
+    # M (pairwise sample sizes, so excluding NA pairs) must satisfy obvious range limits
+    expect_true( min(M) >= 0 )
+    expect_true( max(M) <= m_loci )
 })
 
 test_that("kinship_std MOR works", {
@@ -64,6 +86,28 @@ test_that("kinship_std MOR works", {
     expect_true( is.matrix(kinship) )
     expect_equal( nrow(kinship), n_ind)
     expect_equal( ncol(kinship), n_ind)
+
+    # repeat with want_M == TRUE
+    obj <- kinship_std( X, mean_of_ratios = TRUE, want_M = TRUE )
+    kinship <- obj$kinship
+    M <- obj$M
+
+    expect_true( is.numeric(kinship) )
+    expect_true( !anyNA(kinship) )
+    expect_true( is.numeric(M) )
+    expect_true( !anyNA(M) )
+    
+    # test dimensions
+    expect_true( is.matrix(kinship) )
+    expect_equal( nrow(kinship), n_ind )
+    expect_equal( ncol(kinship), n_ind )
+    expect_true( is.matrix(M) )
+    expect_equal( nrow(M), n_ind )
+    expect_equal( ncol(M), n_ind )
+    
+    # M (pairwise sample sizes, so excluding NA pairs) must satisfy obvious range limits
+    expect_true( min(M) >= 0 )
+    expect_true( max(M) <= m_loci )
 })
 
 test_that("fst_wc works", {

@@ -66,3 +66,7 @@
 * Debugged functions `fst_wc` and `fst_wh`, which previously propagated some matrix-vector products incorrectly.
   This bug resulted in small biases when subpopulation sample sizes were unequal (sample weighing was set incorrectly; there was no bug when all sample sizes were equal).
   The bug was introduced in version 1.0.8.9000 (commit b445e3e) and remained until this version.
+
+# 2020-09-24 - popkinsuppl 1.0.13.9000
+
+* Function `kinship_std` added `want_M` option, which if `TRUE` returns a list containing the `kinship` matrix as well as the pairwise complete count matrix `M`.

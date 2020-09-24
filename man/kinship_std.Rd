@@ -10,7 +10,8 @@ kinship_std(
   mean_of_ratios = FALSE,
   loci_on_cols = FALSE,
   mem_factor = 0.7,
-  mem_lim = NA
+  mem_lim = NA,
+  want_M = FALSE
 )
 }
 \arguments{
@@ -32,10 +33,18 @@ Ignored if \code{mem_lim} is not \code{NA}.}
 \item{mem_lim}{Memory limit in GB, used to break up genotype data into chunks for very large datasets.
 Note memory usage is somewhat underestimated and is not controlled strictly.
 Default in Linux and Windows is \code{mem_factor} times the free system memory, otherwise it is 1GB (OSX and other systems).}
+
+\item{want_M}{If \code{TRUE}, includes the matrix \code{M} of non-missing pair counts in the return value, which are sample sizes that can be useful in modeling the variance of estimates.
+Default \code{FALSE} is to return the kinship matrix only.}
 }
 \value{
-The estimated kinship matrix.
-If \eqn{X} has names for the individuals, they will be copied to the rows and columns of this kinship matrix.
+If \code{want_M} is \code{FALSE}, returns the estimated \code{n}-by-\code{n} kinship matrix only.
+If \code{X} has names for the individuals, they will be copied to the rows and columns of this kinship matrix.
+If \code{want_M} is \code{TRUE}, a named list is returned, containing:
+\itemize{
+\item \code{kinship}: the estimated \code{n}-by-\code{n} kinship matrix
+\item \code{M}: the \code{n}-by-\code{n} matrix of non-missing pair counts (see \code{want_M} option).
+}
 }
 \description{
 This function constructs the standard kinship estimates for a given genotype matrix.
