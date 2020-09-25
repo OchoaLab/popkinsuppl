@@ -69,4 +69,10 @@
 
 # 2020-09-24 - popkinsuppl 1.0.13.9000
 
-* Function `kinship_std` added `want_M` option, which if `TRUE` returns a list containing the `kinship` matrix as well as the pairwise complete count matrix `M`.
+* Function `kinship_std` 
+  - Added `want_M` option, which if `TRUE` returns a list containing the `kinship` matrix as well as the pairwise complete count matrix `M`.
+  - Added `m_chunk_max` option (default 1000), which sets the maximum number of loci to process at the time.
+	The new default behavior reduces memory usage a lot, especially on machines with large memory, without sacrificing speed.
+	Original version would use a lot of memory just because it was available, which could be inconvenient when trying to run other processes, and did not result in increased speed, so it was unnecessary at best.
+  - Fixed a rare bug that affected `mean_of_ratios = FALSE` version only, and only occured when `m_chunk` was smaller than `m_loci`.
+    In original version `m_chunk` was as large as memory allowed, so the bug would have only occurred when `m_loci` was very large.

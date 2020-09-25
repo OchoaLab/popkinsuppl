@@ -19,6 +19,8 @@
 #' Default in Linux and Windows is `mem_factor` times the free system memory, otherwise it is 1GB (OSX and other systems).
 #' @param want_M If `TRUE`, includes the matrix `M` of non-missing pair counts in the return value, which are sample sizes that can be useful in modeling the variance of estimates.
 #' Default `FALSE` is to return the kinship matrix only.
+#' @param m_chunk_max Sets the maximum number of loci to process at the time.
+#' Actual number of loci loaded may be lower if memory is limiting.
 #'
 #' @return If `want_M` is `FALSE`, returns the estimated `n`-by-`n` kinship matrix only.
 #' If `X` has names for the individuals, they will be copied to the rows and columns of this kinship matrix.
@@ -67,7 +69,8 @@ kinship_std <- function(
                         loci_on_cols = FALSE,
                         mem_factor = 0.7,
                         mem_lim = NA,
-                        want_M = FALSE
+                        want_M = FALSE,
+                        m_chunk_max = 1000 # gave good performance in tests
                         ) {
     if ( missing( X ) )
         stop( 'Genotype matrix `X` is required!' )
@@ -136,6 +139,9 @@ kinship_std <- function(
                          mem_factor = mem_factor
                      )
     m_chunk <- data$m_chunk
+    # cap value to a nice performing value (very good speed, minimal memory)
+    if ( m_chunk > m_chunk_max )
+        m_chunk <- m_chunk_max
     
     # initialize desired matrix
     kinship <- matrix(0, nrow = n, ncol = n)
@@ -214,7 +220,7 @@ kinship_std <- function(
             # work on scalar normalization
             nu <- nu + sum(Vi) # add these values, which are always defined
             # to normalize nu (every polymorphic SNP contributes a value in this case, regardless of missingness of particular individual pairs)
-            m_nu <- m_nu <- length(Vi)
+            m_nu <- m_nu + length(Vi)
         }
 
         # cross product matrix at this SNP, add to running sum.  We'll add an extra -1 later... (this is computationally faster and maybe even more numerically stable)

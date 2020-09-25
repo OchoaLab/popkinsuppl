@@ -73,6 +73,13 @@ test_that("kinship_std ROM works", {
     # M (pairwise sample sizes, so excluding NA pairs) must satisfy obvious range limits
     expect_true( min(M) >= 0 )
     expect_true( max(M) <= m_loci )
+
+    # repeat with non-default m_chunk_max
+    expect_silent(
+        kinship2 <- kinship_std( X, m_chunk_max = 1 )
+    )
+    # outputs should have been the same
+    expect_equal( kinship, kinship2 )
 })
 
 test_that("kinship_std MOR works", {
@@ -108,6 +115,13 @@ test_that("kinship_std MOR works", {
     # M (pairwise sample sizes, so excluding NA pairs) must satisfy obvious range limits
     expect_true( min(M) >= 0 )
     expect_true( max(M) <= m_loci )
+    
+    # repeat with non-default m_chunk_max
+    expect_silent(
+        kinship2 <- kinship_std( X, mean_of_ratios = TRUE, m_chunk_max = 1 )
+    )
+    # outputs should have been the same
+    expect_equal( kinship, kinship2 )
 })
 
 test_that("fst_wc works", {
