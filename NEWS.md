@@ -76,3 +76,8 @@
 	Original version would use a lot of memory just because it was available, which could be inconvenient when trying to run other processes, and did not result in increased speed, so it was unnecessary at best.
   - Fixed a rare bug that affected `mean_of_ratios = FALSE` version only, and only occured when `m_chunk` was smaller than `m_loci`.
     In original version `m_chunk` was as large as memory allowed, so the bug would have only occurred when `m_loci` was very large.
+
+# 2020-10-16 - popkinsuppl 1.0.14.9000
+
+* Extended `m_chunk_max` option (see `kinship_std` above) to functions: `fst_wc`, `fst_wh`, `fst_hudson_k`, and `fst_hudson_pairwise`.
+  This reduces memory usage a lot without sacrificing speed.

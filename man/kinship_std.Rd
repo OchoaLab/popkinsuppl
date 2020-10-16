@@ -11,8 +11,8 @@ kinship_std(
   loci_on_cols = FALSE,
   mem_factor = 0.7,
   mem_lim = NA,
-  want_M = FALSE,
-  m_chunk_max = 1000
+  m_chunk_max = 1000,
+  want_M = FALSE
 )
 }
 \arguments{
@@ -35,11 +35,11 @@ Ignored if \code{mem_lim} is not \code{NA}.}
 Note memory usage is somewhat underestimated and is not controlled strictly.
 Default in Linux and Windows is \code{mem_factor} times the free system memory, otherwise it is 1GB (OSX and other systems).}
 
-\item{want_M}{If \code{TRUE}, includes the matrix \code{M} of non-missing pair counts in the return value, which are sample sizes that can be useful in modeling the variance of estimates.
-Default \code{FALSE} is to return the kinship matrix only.}
-
 \item{m_chunk_max}{Sets the maximum number of loci to process at the time.
 Actual number of loci loaded may be lower if memory is limiting.}
+
+\item{want_M}{If \code{TRUE}, includes the matrix \code{M} of non-missing pair counts in the return value, which are sample sizes that can be useful in modeling the variance of estimates.
+Default \code{FALSE} is to return the kinship matrix only.}
 }
 \value{
 If \code{want_M} is \code{FALSE}, returns the estimated \code{n}-by-\code{n} kinship matrix only.

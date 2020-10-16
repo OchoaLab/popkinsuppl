@@ -17,6 +17,8 @@
 #' @param mem_lim Memory limit in GB, used to break up genotype data into chunks for very large datasets.
 #' Note memory usage is somewhat underestimated and is not controlled strictly.
 #' Default in Linux and Windows is `mem_factor` times the free system memory, otherwise it is 1GB (OSX and other systems).
+#' @param m_chunk_max Sets the maximum number of loci to process at the time.
+#' Actual number of loci loaded may be lower if memory is limiting.
 #'
 #' @return A list with the following named elements, in this order:
 #' 
@@ -66,7 +68,16 @@
 #' The popkin package.
 #'
 #' @export
-fst_hudson_k <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE, mem_factor = 0.7, mem_lim = NA) {
+fst_hudson_k <- function(
+                         X,
+                         labs,
+                         m = NA,
+                         ind_keep = NULL,
+                         loci_on_cols = FALSE,
+                         mem_factor = 0.7,
+                         mem_lim = NA,
+                         m_chunk_max = 1000
+                         ) {
     if (missing(X))
         stop('Genotype matrix `X` is required!')
     if (missing(labs))
@@ -114,6 +125,9 @@ fst_hudson_k <- function(X, labs, m = NA, ind_keep = NULL, loci_on_cols = FALSE,
                          mem_factor = mem_factor
                      )
     m_chunk <- data$m_chunk
+    # cap value to a nice performing value (very good speed, minimal memory)
+    if ( m_chunk > m_chunk_max )
+        m_chunk <- m_chunk_max
     
     # navigate chunks
     i_chunk <- 1 # start of first chunk (needed for matrix inputs only; as opposed to function inputs)

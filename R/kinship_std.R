@@ -17,10 +17,10 @@
 #' @param mem_lim Memory limit in GB, used to break up genotype data into chunks for very large datasets.
 #' Note memory usage is somewhat underestimated and is not controlled strictly.
 #' Default in Linux and Windows is `mem_factor` times the free system memory, otherwise it is 1GB (OSX and other systems).
-#' @param want_M If `TRUE`, includes the matrix `M` of non-missing pair counts in the return value, which are sample sizes that can be useful in modeling the variance of estimates.
-#' Default `FALSE` is to return the kinship matrix only.
 #' @param m_chunk_max Sets the maximum number of loci to process at the time.
 #' Actual number of loci loaded may be lower if memory is limiting.
+#' @param want_M If `TRUE`, includes the matrix `M` of non-missing pair counts in the return value, which are sample sizes that can be useful in modeling the variance of estimates.
+#' Default `FALSE` is to return the kinship matrix only.
 #'
 #' @return If `want_M` is `FALSE`, returns the estimated `n`-by-`n` kinship matrix only.
 #' If `X` has names for the individuals, they will be copied to the rows and columns of this kinship matrix.
@@ -69,8 +69,8 @@ kinship_std <- function(
                         loci_on_cols = FALSE,
                         mem_factor = 0.7,
                         mem_lim = NA,
-                        want_M = FALSE,
-                        m_chunk_max = 1000 # gave good performance in tests
+                        m_chunk_max = 1000, # gave good performance in tests
+                        want_M = FALSE
                         ) {
     if ( missing( X ) )
         stop( 'Genotype matrix `X` is required!' )

@@ -12,7 +12,8 @@ fst_wc(
   ind_keep = NULL,
   loci_on_cols = FALSE,
   mem_factor = 0.7,
-  mem_lim = NA
+  mem_lim = NA,
+  m_chunk_max = 1000
 )
 }
 \arguments{
@@ -37,6 +38,9 @@ Ignored if \code{mem_lim} is not \code{NA}.}
 \item{mem_lim}{Memory limit in GB, used to break up genotype data into chunks for very large datasets.
 Note memory usage is somewhat underestimated and is not controlled strictly.
 Default in Linux and Windows is \code{mem_factor} times the free system memory, otherwise it is 1GB (OSX and other systems).}
+
+\item{m_chunk_max}{Sets the maximum number of loci to process at the time.
+Actual number of loci loaded may be lower if memory is limiting.}
 }
 \value{
 A list with the following named elements, in this order:
