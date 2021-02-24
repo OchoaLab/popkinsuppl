@@ -582,3 +582,108 @@ test_that("kinship_std_limit works", {
     # this max(abs(x)) boils it down to a single comparison
     expect_equal( max(abs(rowMeans( kinship_biased_limit ))), 0 )
 })
+
+test_that("kinship_wg_limit works", {
+    # construct a dummy kinship matrix
+    kinship <- matrix(
+        c(
+            0.6, 0.1, 0,
+            0.1, 0.6, 0.1,
+            0, 0.1, 0.6
+        ),
+        nrow = 3
+    )
+    # this is its biased WG limit
+    kinship_wg_lim <- kinship_wg_limit(kinship)
+    
+    # validate output!
+    expect_silent( popkin::validate_kinship( kinship_wg_lim ) )
+
+    # match dims (already tested to be square by validate_kinship, so just check once)
+    expect_equal( nrow( kinship ), nrow( kinship_wg_lim ) )
+
+    # zero overall off-diagonal mean
+    expect_equal( mean( kinship_wg_lim[ lower.tri( kinship_wg_lim ) ] ), 0 )
+})
+
+### tests that require BED files
+
+if (suppressMessages(suppressWarnings(require(genio)))) {
+
+    ### SNPRelate comparisons
+    
+    if (suppressMessages(suppressWarnings(require(SNPRelate)))) {
+
+        ### SETUP
+
+        # write BED files only if both packages are present
+        # save data to temporary location
+        # output path without extension
+        file_out <- tempfile('X-popkinsuppl')
+        genio::write_plink( file_out, X = X )
+
+        # now write GDS file
+        file_gds <- paste0( file_out, '.gds')
+        SNPRelate::snpgdsBED2GDS(
+                       paste0( file_out, '.bed'),
+                       paste0( file_out, '.fam'),
+                       paste0( file_out, '.bim'),
+                       file_gds,
+                       verbose = FALSE
+                   )
+
+        # load file, for all analyses
+        genofile <- SNPRelate::snpgdsOpen( file_gds )
+
+        ### WG FST (for subpops)
+
+        # we found that our HudsonK calculations match what they call WH in their code (but is really WG FST for subpopulations).
+        # here we repeat those tests
+
+        # their version
+        fst_wg <- SNPRelate::snpgdsFst(
+                                 genofile,
+                                 as.factor( labs ),
+                                 method = 'W&H02',
+                                 verbose = FALSE
+                             )$Fst
+
+        # our version
+        fst_hudsonk <- fst_hudson_k(
+            X,
+            labs
+        )$fst
+
+        expect_equal( fst_hudsonk, fst_wg )
+
+        ### WG KINSHIP
+        
+        # get WG kinship estimate with their own package
+        kinship_wg <- SNPRelate::snpgdsIndivBeta(
+                                     genofile,
+                                     with.id = FALSE,
+                                     inbreeding = FALSE,
+                                     verbose = FALSE
+                                 )
+
+        # get WG estimates via popkin and popkinsuppl
+        # first get popkin estimates
+        kinship_popkin <- popkin::popkin( X )
+        # then just shift down with limit formula!
+        kinship_wg_popkin <- kinship_wg_limit( kinship_popkin )
+        # compare
+        expect_equal( kinship_wg_popkin, kinship_wg )
+
+        ### CLEANUP
+
+        # close GDS file
+        SNPRelate::snpgdsClose(genofile)
+
+        # remove GDS file
+        #file.remove( file_gds )
+        genio:::delete_files_generic( file_out, 'gds' )
+        # remove BED files
+        genio::delete_files_plink( file_out )
+    }
+
+}

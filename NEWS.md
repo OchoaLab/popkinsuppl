@@ -81,3 +81,8 @@
 
 * Extended `m_chunk_max` option (see `kinship_std` above) to functions: `fst_wc`, `fst_wh`, `fst_hudson_k`, and `fst_hudson_pairwise`.
   This reduces memory usage a lot without sacrificing speed.
+
+# 2021-02-23 - popkinsuppl 1.0.15.9000
+
+* Added function `kinship_wg_limit`, calculates the limit of the Weir-Goudet (WG) estimator.
+  - Also obtains WG kinship estimates if input is the popkin kinship estimate instead of the true kinship matrix, which is validated in internal tests against the WG implementation from SNPRelate.

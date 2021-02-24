@@ -1,6 +1,6 @@
 Package: popkinsuppl
 Title: Supplement to popkin package
-Version: 1.0.14.9000
+Version: 1.0.15.9000
 Authors@R: c(
     person(given = "Alejandro",
 	   family = "Ochoa",
@@ -22,6 +22,8 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Suggests: 
-    testthat (>= 2.1.0)
+    testthat (>= 2.1.0),
+    genio,
+    SNPRelate
 URL: https://github.com/OchoaLab/popkinsuppl
 BugReports: https://github.com/OchoaLab/popkinsuppl/issues
