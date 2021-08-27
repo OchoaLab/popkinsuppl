@@ -567,7 +567,9 @@ test_that("kinship_std_limit works", {
     )
     # this is its biased limit
     # (uniform weights)
-    kinship_biased_limit <- kinship_std_limit(kinship)
+    expect_silent(
+        kinship_biased_limit <- kinship_std_limit(kinship)
+    )
     
     # validate output!
     expect_silent( popkin::validate_kinship(kinship_biased_limit) )
@@ -581,6 +583,38 @@ test_that("kinship_std_limit works", {
     # zero mean in every row
     # this max(abs(x)) boils it down to a single comparison
     expect_equal( max(abs(rowMeans( kinship_biased_limit ))), 0 )
+})
+
+test_that( "kinship_gcta_limit works", {
+    # construct a dummy kinship matrix
+    kinship <- matrix(
+        c(
+            0.6, 0.1, 0,
+            0.1, 0.6, 0.1,
+            0, 0.1, 0.6
+        ),
+        nrow = 3
+    )
+    # this is its biased limit  
+    expect_silent(
+        kinship_gcta_lim <- kinship_gcta_limit(kinship)
+    )
+    # compare directly to standard's limit
+    expect_silent(
+        kinship_std_lim <- kinship_std_limit(kinship)
+    )
+    # off-diagonal elements must agree!
+    indexes <- lower.tri( kinship_gcta_lim )
+    expect_equal( kinship_gcta_lim[ indexes ], kinship_std_lim[ indexes ] )
+    
+    # diagonal should have this form
+    kinship_mean <- mean( kinship )
+    kinship_mean_j <- rowMeans( kinship )
+    diag_gcta_exp <- ( diag( kinship ) - kinship_mean_j ) / ( 1 - kinship_mean )
+    expect_equal( diag( kinship_gcta_lim ), diag_gcta_exp )
+    
+    # run through generic validation regardless
+    expect_silent( popkin::validate_kinship( kinship_gcta_lim ) )
 })
 
 test_that("kinship_wg_limit works", {
