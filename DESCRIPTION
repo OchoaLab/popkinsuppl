@@ -1,6 +1,6 @@
 Package: popkinsuppl
 Title: Supplement to popkin package
-Version: 1.0.16.9000
+Version: 1.0.17.9000
 Authors@R: c(
     person(given = "Alejandro",
 	   family = "Ochoa",
@@ -19,7 +19,7 @@ Imports:
 License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Suggests: 
     testthat (>= 2.1.0),
     genio,

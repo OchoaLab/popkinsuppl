@@ -93,3 +93,8 @@
 - Updated DESCRIPTION main paragraph to mention kinship biased limit functions.
 - Reformatted this `NEWS.md` slightly to improve its automatic parsing.
 - Removed "LazyData: true" from DESCRIPTION (to avoid a new "NOTE" on CRAN).
+
+# popkinsuppl 1.0.17.9000 (2022-05-04)
+
+- Added tests that confirm that bias transforming popkin estimates recovers standard kinship estimates when there's no missingness (for both ROM and MOR cases!)
+- Added `test_that` section for comparisons to the `SNPRelate` package (mostly changed indentation).
