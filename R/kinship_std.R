@@ -7,9 +7,9 @@
 #' @param X The genotype matrix (BEDMatrix, regular R matrix, or function, same as `popkin`).
 #' @param n The number of individuals.
 #' Required if `X` is a function, ignored otherwise.
-#' @param mean_of_ratios The standard kinship estimator can be computed in two broad forms.
-#' If `FALSE` (default) the ratio-of-means version is computed, which behaves more favorably and has a known asymptotic bias.
-#' If `TRUE`, the mean-of-ratios version is computed, which is more variable and has an uncharacterized bias, but is most common in the literature.
+#' @param mean_of_ratios The estimator can be computed in two broad forms.
+#' If `FALSE` (default) the ratio-of-means (ROM) version is computed, which behaves more favorably and has a known asymptotic bias.
+#' If `TRUE`, the mean-of-ratios (MOR) version is computed, which is more variable and has an uncharacterized bias, but is most common in the literature.
 #' @param loci_on_cols Determines the orientation of the genotype matrix (by default, `FALSE`, loci are along the rows).
 #' If `X` is a BEDMatrix object, the input value is ignored (set automatically to `TRUE` internally).
 #' @param mem_factor Proportion of available memory to use loading and processing genotypes.
@@ -53,9 +53,9 @@
 #' X <- matrix(X, nrow = m_loci, ncol = n_ind)
 #'
 #' # estimate kinship matrices
-#' # ... ratio-of-means version
+#' # ... ROM version
 #' kinship_rom <- kinship_std(X)
-#' # ... mean-of-ratios version
+#' # ... MOR version
 #' kinship_mor <- kinship_std(X, mean_of_ratios = TRUE)
 #' 
 #' @seealso

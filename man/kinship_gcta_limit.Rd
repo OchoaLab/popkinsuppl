@@ -2,7 +2,7 @@
 % Please edit documentation in R/kinship_gcta_limit.R
 \name{kinship_gcta_limit}
 \alias{kinship_gcta_limit}
-\title{Limit of GCTA kinship (GRM) estimator}
+\title{Limit of ROM version of the 2011 GCTA kinship (GRM) estimator}
 \usage{
 kinship_gcta_limit(kinship)
 }
@@ -13,7 +13,8 @@ kinship_gcta_limit(kinship)
 The biased limit of the GCTA kinship (GRM) estimator
 }
 \description{
-This function calculates the biased limiting expectation of the GCTA kinship estimator, which they refer to as a GRM instead.
+This function calculates the biased limiting expectation of the GCTA kinship estimator described in Yang et al. (2011), which they refer to as a GRM instead, except the ratio-of-means (ROM) version (the above publication defines the mean-of-ratios (MOR) version instead; see Ochoa and Storey 2021 for the ROM version).
+The GCTA software history shows that this exact estimator was abandoned in version 0.93.0 (8 Jul 2011) in favor of \code{\link[=kinship_std]{kinship_std()}}, which remains in use as of writing (2022).
 This limit is calculated from the true kinship matrix.
 It agrees with \code{\link[=kinship_std_limit]{kinship_std_limit()}} off-diagonal, but the diagonal bias is slightly different.
 }
@@ -30,4 +31,10 @@ kinship <- matrix(
 # this is its biased limit
 kinship_gcta_lim <- kinship_gcta_limit(kinship)
 
+}
+\seealso{
+Standard kinship estimator \code{\link[=kinship_std]{kinship_std()}} and the limit of the ROM version \code{\link[=kinship_std_limit]{kinship_std_limit()}}.
+
+GCTA software, including history/update log.
+https://yanglab.westlake.edu.cn/software/gcta/#Download
 }

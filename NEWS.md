@@ -98,3 +98,12 @@
 
 - Added tests that confirm that bias transforming popkin estimates recovers standard kinship estimates when there's no missingness (for both ROM and MOR cases!)
 - Added `test_that` section for comparisons to the `SNPRelate` package (mostly changed indentation).
+
+# popkinsuppl 1.0.18.9000 (2022-05-11)
+
+- Updates centered around the fact that the GCTA GRM is the standard kinship estimator (MOR), has been for most of GCTA's existence.
+  - I had the impression before that GCTA used a different formula described in a 2011 paper, but it was abandoned in software in 2011 in favor of the standard estimator!
+  - Added a toy test that confirms that a precalculated GCTA GRM equals the output of `kinship_std` with `mean_of_ratios = TRUE` from the same input genotypes.
+  - Updated the documentation for `kinship_gcta_limit` to clarify my recent findings.
+  - Added function `inbr_gcta`. which I planned to validate against GCTA's estimate when I discovered my flawed assumption.  I present it anyway since it was a lot of work, though it is a historical dead end most likely.
+    - Function has internal validation (two formulas are implemented) and was validated against the limit `kinship_gcta_limit` in an admixture simulation (not part of this package).

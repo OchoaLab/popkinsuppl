@@ -22,6 +22,9 @@
 #' # (uniform weights)
 #' kinship_biased_limit <- kinship_std_limit(kinship)
 #'
+#' @seealso
+#' Standard kinship estimator [kinship_std()].
+#'
 #' @export
 kinship_std_limit <- function(kinship, weights = NULL) {
     # make sure this is not missing

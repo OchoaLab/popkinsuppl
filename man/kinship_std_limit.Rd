@@ -33,3 +33,6 @@ kinship <- matrix(
 kinship_biased_limit <- kinship_std_limit(kinship)
 
 }
+\seealso{
+Standard kinship estimator \code{\link[=kinship_std]{kinship_std()}}.
+}

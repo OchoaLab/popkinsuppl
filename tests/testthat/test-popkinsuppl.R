@@ -1,3 +1,7 @@
+# NOTE: a few fixed files with precalculated GCTA GRM were just copied from genio
+# cp ../../../genio/tests/testthat/dummy-7-10-0.1.* .
+# includes bed/bim/fam/grm.{bin,id,N.bin}
+
 # construct some random data to make sure all functions run on it and return objects in the expected dimensions
 
 # dimensions of simulated data
@@ -416,6 +420,40 @@ test_that("fst_hudson_pairwise works singleton subpops", {
 })
 
 
+test_that( "inbr_gcta works", {
+    # test ROM, basic version first
+    expect_silent(
+        f_rom <- inbr_gcta_basic( X )
+    )
+    expect_true( is.numeric( f_rom ) )
+    expect_true( !anyNA( f_rom ) )
+    expect_equal( length( f_rom ), n_ind )
+    # don't have clean theory for these bounds, but in practice they hold up
+    expect_true( all( f_rom >= -1 ) )
+    expect_true( all( f_rom <= 1 ) )
+    # now test fancier code
+    expect_silent(
+        f_rom2 <- inbr_gcta( X )
+    )
+    expect_equal( f_rom2, f_rom )
+
+    # MOR version now
+    expect_silent(
+        f_mor <- inbr_gcta_basic( X, mean_of_ratios = TRUE )
+    )
+    expect_true( is.numeric( f_mor ) )
+    expect_true( !anyNA( f_mor ) )
+    expect_equal( length( f_mor ), n_ind )
+    # don't have clean theory for these bounds, but in practice they hold up
+    expect_true( all( f_mor >= -1 ) )
+    expect_true( all( f_mor <= 1 ) )
+    # now test fancier code
+    expect_silent(
+        f_mor2 <- inbr_gcta( X, mean_of_ratios = TRUE )
+    )
+    expect_equal( f_mor2, f_mor )
+})
+
 ###############################################
 
 # tests restricted to data:
@@ -653,6 +691,27 @@ test_that("kinship_wg_limit works", {
 ### tests that require BED files
 
 if (suppressMessages(suppressWarnings(require(genio)))) {
+
+    if (suppressMessages(suppressWarnings(require(BEDMatrix)))) {
+        # test BEDMatrix features
+
+        test_that( "kinship_std MOR agrees with GCTA", {
+            # NOTE: GCTA implements MOR version only, so only that gets tested here
+            # file to work with
+            name <- 'dummy-7-10-0.1'
+            # load true GCTA GRM, scale as we do
+            kinship_gcta_exp <- genio::read_grm( name )$kinship / 2
+            
+            # get estimate with our code now
+            # `simple_names = TRUE` crucial to get names to match
+            X <- BEDMatrix( name, simple_names = TRUE )
+            expect_silent(
+                kinship_std_obs <- kinship_std( X, mean_of_ratios = TRUE )
+            )
+            # binary GRM reduces precision relative to machine precision, slightly
+            expect_equal( kinship_std_obs, kinship_gcta_exp, tolerance = 1e-7 )
+        })
+    }
 
     ### SNPRelate comparisons
     
